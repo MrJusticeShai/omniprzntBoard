@@ -240,7 +240,15 @@ function saveData(key, value) {
   sv(key, value); // always cache locally
   if (db && !writing) {
     pendingWrites++;
-    var patch = {}; patch[key] = value;
+    var patch = {};
+    // Firestore doesn't support nested arrays — serialize as objects
+    if(key === 'ol2'){
+      patch[key] = value.map(function(it){ return {n:it[0], t:it[1], d:it[2]}; });
+    } else if(key === 'f_topics'){
+      patch[key] = value.map(function(it){ return {a:it[0], b:it[1], c:it[2]}; });
+    } else {
+      patch[key] = value;
+    }
     db.collection('usapp').doc('state').set(patch, {merge:true})
       .then(function(){
         pendingWrites--;
@@ -277,7 +285,7 @@ function onDataChanged(callback) {
 function seedDefaults() {
   if (!db) return;
   var seed = {
-    ol2: [["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Pick our first book to read together","Book",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]],
+    ol2: [{n:"First date",t:"Milestone",d:1},{n:"Phone call",t:"Milestone",d:1},{n:"Start the Date Spinner",t:"To-do",d:0},{n:"30-minute lunch",t:"Date",d:0},{n:"First walk / hike / cycle",t:"Date",d:0},{n:"Pick our first book to read together",t:"Book",d:0},{n:"Go on a hike",t:"Adventure",d:0},{n:"Go cycling together",t:"Adventure",d:0},{n:"Bowling",t:"Adventure",d:0},{n:"Bouncing / trampoline park",t:"Adventure",d:0},{n:"Go-karting",t:"Adventure",d:0},{n:"Quad biking",t:"Adventure",d:0},{n:"Aquarium",t:"Adventure",d:0},{n:"Escape room",t:"Adventure",d:0},{n:"Karaoke night",t:"Adventure",d:0},{n:"Picnic with books",t:"Adventure",d:0},{n:"Cook a meal together",t:"Adventure",d:0},{n:"Sunset somewhere beautiful",t:"Adventure",d:0},{n:"Our first trip together",t:"Trip",d:0},{n:"Nature day trip",t:"Trip",d:0},{n:"Surprise weekend",t:"Trip",d:0}],
     ideas: ["Walk + ice cream","Coffee + board game","30-minute lunch","Cook together","Read side by side","Storytime","Karaoke","Bowling","Go-karting","Escape room","Aquarium","Hike with a view","Cycle + picnic","Sunset + playlists","Trivia night","Mystery date"],
     qi: 0,
     f_book: "",
@@ -286,7 +294,7 @@ function seedDefaults() {
     f_journal: "",
     f_moments: "",
     f_weekly: "",
-    f_topics: [["Family structure","In progress","Childhood memories"],["Religion and beliefs","In progress","How beliefs show up daily"],["Past relationships","In progress","Lessons and growth"],["Future ambitions","In progress","What success means to her"],["Reading","In progress","Favourite books and genres"],["Romance and affection","In progress","Little gestures that matter"],["Conflict and repair","In progress","How we repair after disagreements"],["Travel and adventure","In progress","Dream destinations"],["Humour and playfulness","In progress","This-or-that rounds"]],
+    f_topics: [{a:"Family structure",b:"In progress",c:"Childhood memories"},{a:"Religion and beliefs",b:"In progress",c:"How beliefs show up daily"},{a:"Past relationships",b:"In progress",c:"Lessons and growth"},{a:"Future ambitions",b:"In progress",c:"What success means to her"},{a:"Reading",b:"In progress",c:"Favourite books and genres"},{a:"Romance and affection",b:"In progress",c:"Little gestures that matter"},{a:"Conflict and repair",b:"In progress",c:"How we repair after disagreements"},{a:"Travel and adventure",b:"In progress",c:"Dream destinations"},{a:"Humour and playfulness",b:"In progress",c:"This-or-that rounds"}],
     f_questions: ["What\u2019s something you wish people would take the time to discover about you, instead of assuming from first impressions?","What\u2019s a childhood experience that shaped who you\u2019ve become?","What does being genuinely loved look like in your everyday life?","What\u2019s an opinion you hold that not everyone agrees with?","What\u2019s something you\u2019ve always wanted to try but haven\u2019t had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"],
     seededAt: Date.now()
   };
@@ -370,13 +378,18 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 // ===== Firestore real-time sync =====
 function applySnapshot(data){
   if(data['ol2'] && Array.isArray(data['ol2'])){
-    // Firestore can return nested arrays — ensure each item is a proper array
-    ol=data['ol2'].map(function(it){ return Array.isArray(it)?it:[it[0]||'',it[1]||'Date',it[2]||0]; });
+    // Deserialize: Firestore stores ol2 as objects {n, t, d} to avoid nested array restriction
+    ol=data['ol2'].map(function(it){
+      return Array.isArray(it) ? it : [it.n||'', it.t||'Date', it.d||0];
+    });
     renderAll();
   }
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
-  if(data['f_topics']){tt=data['f_topics'];document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('')}
+  if(data['f_topics']){
+    tt=data['f_topics'].map(function(r){ return Array.isArray(r)?r:[r.a||'',r.b||'',r.c||'']; });
+    document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
+  }
   if(data['f_questions']){qs=data['f_questions'];showQ()}
   document.querySelectorAll('[data-save]').forEach(function(el){
     var k='f_'+el.dataset.save;
