@@ -371,6 +371,7 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 
 // ===== Firestore real-time sync =====
 function applySnapshot(data){
+  console.log('[sync] applying snapshot, ol2 items:', data['ol2'] ? data['ol2'].length : 'none');
   if(data['ol2']){ol=data['ol2'];renderAll()}
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
@@ -382,7 +383,8 @@ function applySnapshot(data){
   });
 }
 onDataChanged(function(data){
-  if(pendingWrites > 0){ queuedSnapshot = data; return; } // hold until write lands
+  console.log('[sync] snapshot received, pendingWrites:', pendingWrites);
+  if(pendingWrites > 0){ queuedSnapshot = data; return; }
   applySnapshot(data);
 });
 
