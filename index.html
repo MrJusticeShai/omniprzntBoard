@@ -239,15 +239,41 @@ function saveData(key, value) {
   }
 }
 
-// Listen for real-time updates from Firestore
+// Listen for real-time updates from Firestore; auto-seed defaults on first run
 function onDataChanged(callback) {
   if (!db) return;
   fbUnsub.state = db.collection('usapp').doc('state').onSnapshot(function(doc){
-    if (!doc.exists) return;
+    if (!doc.exists) {
+      // First run — seed all hardcoded defaults into Firestore
+      seedDefaults();
+      return;
+    }
     writing = true;
     callback(doc.data());
     writing = false;
   }, function(e){console.warn('Snapshot error:',e)});
+}
+
+// Seed all original hardcoded data into Firestore (runs once when DB is empty)
+function seedDefaults() {
+  if (!db) return;
+  var seed = {
+    ol2: [["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Pick our first book to read together","Book",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]],
+    ideas: ["Walk + ice cream","Coffee + board game","30-minute lunch","Cook together","Read side by side","Storytime","Karaoke","Bowling","Go-karting","Escape room","Aquarium","Hike with a view","Cycle + picnic","Sunset + playlists","Trivia night","Mystery date"],
+    qi: 0,
+    f_book: "",
+    f_booknotes: "",
+    f_dnotes: "",
+    f_journal: "",
+    f_moments: "",
+    f_weekly: "",
+    f_topics: [["Family structure","In progress","Childhood memories"],["Religion and beliefs","In progress","How beliefs show up daily"],["Past relationships","In progress","Lessons and growth"],["Future ambitions","In progress","What success means to her"],["Reading","In progress","Favourite books and genres"],["Romance and affection","In progress","Little gestures that matter"],["Conflict and repair","In progress","How we repair after disagreements"],["Travel and adventure","In progress","Dream destinations"],["Humour and playfulness","In progress","This-or-that rounds"]],
+    f_questions: ["What\u2019s something you wish people would take the time to discover about you, instead of assuming from first impressions?","What\u2019s a childhood experience that shaped who you\u2019ve become?","What does being genuinely loved look like in your everyday life?","What\u2019s an opinion you hold that not everyone agrees with?","What\u2019s something you\u2019ve always wanted to try but haven\u2019t had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"],
+    seededAt: Date.now()
+  };
+  db.collection('usapp').doc('state').set(seed)
+    .then(function(){console.log('Defaults seeded to Firestore')})
+    .catch(function(e){console.warn('Seed failed:',e)});
 }
 
 // floating hearts
@@ -327,6 +353,8 @@ onDataChanged(function(data){
   if(data['ol2']){ol=data['ol2'];renderAll()}
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
+  if(data['f_topics']){tt=data['f_topics'];document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('')}
+  if(data['f_questions']){qs=data['f_questions'];showQ()}
   document.querySelectorAll('[data-save]').forEach(function(el){
     var k='f_'+el.dataset.save;
     if(typeof data[k]!=='undefined' && el.value!==data[k]){el.value=data[k];sv(k,data[k])}
