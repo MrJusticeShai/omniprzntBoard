@@ -233,7 +233,7 @@ var writing = false; // prevent snapshot write-loops
 // Save a single key-value to the state document in Firestore + localStorage
 function saveData(key, value) {
   sv(key, value); // always cache locally
-  suppressSync = Date.now() + 800; // suppress onSnapshot reverts for 800ms after local change
+  suppressSync = Date.now() + 20; // suppress onSnapshot reverts for 20ms after local change
   if (db && !writing) {
     var patch = {}; patch[key] = value;
     db.collection('usapp').doc('state').set(patch, {merge:true})
