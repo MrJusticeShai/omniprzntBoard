@@ -49,6 +49,20 @@ table{border-collapse:collapse;width:100%;font-size:.92rem}
 td,th{border-bottom:1px solid var(--soft);padding:6px 8px;text-align:left}
 small{color:var(--mute)}
 
+/* ===== Entry cards (Moments + Journal) ===== */
+.entry-form{background:var(--bg);border:2px dashed var(--accent);border-radius:14px;padding:14px;margin:14px 0;display:flex;flex-direction:column;gap:8px}
+.entry-form input[type=text],.entry-form input[type=date],.entry-form textarea{background:var(--card);border:1px solid var(--soft);border-radius:10px;padding:9px;font:inherit;color:var(--ink);width:100%}
+.entry-form input[type=date]{color-scheme:light dark}
+.entry-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
+.ecard{background:var(--card);border:1px solid var(--soft);border-radius:14px;padding:14px;box-shadow:0 3px 12px rgba(230,59,111,.1);display:flex;flex-direction:column;gap:6px;animation:fly .35s ease}
+.ecard .edate{font-size:.78rem;color:var(--mute)}
+.ecard .etitle{font-weight:bold;font-size:1rem}
+.ecard .ebody{font-size:.9rem;color:var(--ink);white-space:pre-wrap;flex:1}
+.ecard .edel{align-self:flex-end;background:none;color:var(--mute);font-size:.8rem;padding:3px 8px;border:1px solid var(--soft);border-radius:999px;margin-top:4px}
+.ecard .edel:hover{background:var(--soft);transform:none}
+.save-row{display:flex;justify-content:flex-end;margin-top:6px}
+.save-row button{padding:9px 20px}
+
 /* ===== Gallery styles ===== */
 .gbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
 .gbar button{font:inherit;border-radius:999px;border:1px solid var(--soft);background:var(--card);color:var(--ink);padding:8px 14px;cursor:pointer;transition:transform .15s,background .2s}
@@ -141,17 +155,30 @@ small{color:var(--mute)}
 <details><summary>🌅 Daily Discovery</summary><div class="body">
 <div class="q" id="dq"></div>
 <div class="row" style="justify-content:center"><button id="dprev">Back</button><button id="dnext">Next question ♥</button></div>
-<textarea data-save="dnotes" placeholder="Her answer, my answer, what to ask next…"></textarea>
+<textarea id="dnotes-input" placeholder="Her answer, my answer, what to ask next…"></textarea>
+<div class="save-row"><button onclick="saveDnotes()">Save notes ♥</button></div>
 </div></details>
 
-<details><summary>📓 Conversation Journal <small>(private to this device)</small></summary><div class="body">
-<textarea data-save="journal" style="min-height:160px" placeholder="Date · topic · what she shared · what I shared · worth a deeper chat later…"></textarea>
+<details><summary>📓 Conversation Journal</summary><div class="body">
+<div class="entry-form" id="jour-form">
+  <input type="date" id="jour-date">
+  <input type="text" id="jour-title" placeholder="Topic — e.g. Family, Dreams, Conflict…">
+  <textarea id="jour-body" placeholder="What she shared · what I shared · worth revisiting…" style="min-height:100px"></textarea>
+  <div class="save-row"><button onclick="addJournal()">Save entry ♥</button></div>
+</div>
+<div class="entry-cards" id="jour-cards"></div>
 </div></details>
 
 <details><summary>🧭 Topic Tracker</summary><div class="body"><div class="scroll"><table id="tt"></table></div></div></details>
 
 <details><summary>✨ Our Moments</summary><div class="body">
-<textarea data-save="moments" placeholder="First message, first call, first meet-up, inside jokes…"></textarea>
+<div class="entry-form" id="mom-form">
+  <input type="text" id="mom-title" placeholder="Title — e.g. First call, Inside joke…">
+  <input type="date" id="mom-date">
+  <textarea id="mom-body" placeholder="What happened, how it felt…" style="min-height:80px"></textarea>
+  <div class="save-row"><button onclick="addMoment()">Save moment ♥</button></div>
+</div>
+<div class="entry-cards" id="mom-cards"></div>
 </div></details>
 
 <!-- ===== Photo Gallery ===== -->
@@ -174,7 +201,8 @@ small{color:var(--mute)}
 <li>Are we comfortable? Is there space to exhale?</li>
 <li>Anything either of us wants more or less of?</li>
 <li>What are we doing next? Spin the wheel 🎡</li></ul>
-<textarea data-save="weekly" placeholder="Notes…"></textarea>
+<textarea id="weekly-input" placeholder="Notes…"></textarea>
+<div class="save-row"><button onclick="saveWeekly()">Save notes ♥</button></div>
 </div></details>
 </main>
 
@@ -364,16 +392,107 @@ document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.lengt
 var tt=[["Family structure","In progress","Childhood memories"],["Religion and beliefs","In progress","How beliefs show up daily"],["Past relationships","In progress","Lessons and growth"],["Future ambitions","In progress","What success means to her"],["Reading","In progress","Favourite books and genres"],["Romance and affection","In progress","Little gestures that matter"],["Conflict and repair","In progress","How we repair after disagreements"],["Travel and adventure","In progress","Dream destinations"],["Humour and playfulness","In progress","This-or-that rounds"]];
 document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
 
-// saved text fields (sync to Firestore)
+// saved text fields (sync to Firestore) — book, booknotes only now
 document.querySelectorAll('[data-save]').forEach(function(el){
   var k='f_'+el.dataset.save; el.value=ld(k,'');
   var to=null;
   el.oninput=function(){
     sv(k,el.value);
     if(to)clearTimeout(to);
-    to=setTimeout(function(){saveData(k,el.value)},800); // debounce Firestore writes
+    to=setTimeout(function(){saveData(k,el.value)},800);
   }
 });
+
+// ===== Our Moments =====
+var moments = ld('f_moments', []);
+function renderMoments(){
+  var c = document.getElementById('mom-cards'); if(!c) return;
+  c.innerHTML = '';
+  moments.forEach(function(m, i){
+    var d = document.createElement('div'); d.className = 'ecard';
+    d.innerHTML = '<div class="edate">'+esc(m.date||'')+'</div>'
+      +'<div class="etitle">'+esc(m.title||'')+'</div>'
+      +'<div class="ebody">'+esc(m.body||'')+'</div>'
+      +'<button class="edel" onclick="deleteMoment('+i+')">Remove</button>';
+    c.appendChild(d);
+  });
+}
+function addMoment(){
+  var title = document.getElementById('mom-title').value.trim();
+  var date  = document.getElementById('mom-date').value;
+  var body  = document.getElementById('mom-body').value.trim();
+  if(!title && !body) return;
+  moments.unshift({title:title, date:date, body:body});
+  saveData('f_moments', moments);
+  document.getElementById('mom-title').value='';
+  document.getElementById('mom-date').value='';
+  document.getElementById('mom-body').value='';
+  renderMoments();
+}
+function deleteMoment(i){
+  moments.splice(i,1);
+  saveData('f_moments', moments);
+  renderMoments();
+}
+renderMoments();
+
+// ===== Conversation Journal =====
+var journalEntries = ld('f_journal', []);
+function renderJournal(){
+  var c = document.getElementById('jour-cards'); if(!c) return;
+  c.innerHTML = '';
+  journalEntries.forEach(function(e, i){
+    var d = document.createElement('div'); d.className = 'ecard';
+    d.innerHTML = '<div class="edate">'+esc(e.date||'')+'</div>'
+      +'<div class="etitle">'+esc(e.title||'')+'</div>'
+      +'<div class="ebody">'+esc(e.body||'')+'</div>'
+      +'<button class="edel" onclick="deleteJournal('+i+')">Remove</button>';
+    c.appendChild(d);
+  });
+}
+function addJournal(){
+  var date  = document.getElementById('jour-date').value;
+  var title = document.getElementById('jour-title').value.trim();
+  var body  = document.getElementById('jour-body').value.trim();
+  if(!title && !body) return;
+  journalEntries.unshift({date:date, title:title, body:body});
+  saveData('f_journal', journalEntries);
+  document.getElementById('jour-date').value='';
+  document.getElementById('jour-title').value='';
+  document.getElementById('jour-body').value='';
+  renderJournal();
+}
+function deleteJournal(i){
+  journalEntries.splice(i,1);
+  saveData('f_journal', journalEntries);
+  renderJournal();
+}
+// Set today's date as default
+(function(){ var d=document.getElementById('jour-date'); if(d) d.valueAsDate=new Date(); })();
+(function(){ var d=document.getElementById('mom-date'); if(d) d.valueAsDate=new Date(); })();
+renderJournal();
+
+// ===== Daily Discovery notes (manual save) =====
+var dnotesEl = document.getElementById('dnotes-input');
+if(dnotesEl){ dnotesEl.value = ld('f_dnotes',''); }
+function saveDnotes(){
+  var v = dnotesEl ? dnotesEl.value : '';
+  sv('f_dnotes', v);
+  saveData('f_dnotes', v);
+  var btn=document.querySelector('[onclick="saveDnotes()"]');
+  if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
+}
+
+// ===== Weekly Check-in notes (manual save) =====
+var weeklyEl = document.getElementById('weekly-input');
+if(weeklyEl){ weeklyEl.value = ld('f_weekly',''); }
+function saveWeekly(){
+  var v = weeklyEl ? weeklyEl.value : '';
+  sv('f_weekly', v);
+  saveData('f_weekly', v);
+  var btn=document.querySelector('[onclick="saveWeekly()"]');
+  if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
+}
 
 // ===== Firestore real-time sync =====
 function applySnapshot(data){
@@ -391,6 +510,21 @@ function applySnapshot(data){
     document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
   }
   if(data['f_questions']){qs=data['f_questions'];showQ()}
+  // Moments
+  if(data['f_moments'] && Array.isArray(data['f_moments'])){
+    moments=data['f_moments']; sv('f_moments',moments); renderMoments();
+  }
+  // Journal
+  if(data['f_journal'] && Array.isArray(data['f_journal'])){
+    journalEntries=data['f_journal']; sv('f_journal',journalEntries); renderJournal();
+  }
+  // Plain text fields
+  if(typeof data['f_dnotes']!=='undefined' && dnotesEl && dnotesEl!==document.activeElement){
+    dnotesEl.value=data['f_dnotes']; sv('f_dnotes',data['f_dnotes']);
+  }
+  if(typeof data['f_weekly']!=='undefined' && weeklyEl && weeklyEl!==document.activeElement){
+    weeklyEl.value=data['f_weekly']; sv('f_weekly',data['f_weekly']);
+  }
   document.querySelectorAll('[data-save]').forEach(function(el){
     var k='f_'+el.dataset.save;
     if(typeof data[k]!=='undefined' && el.value!==data[k] && el!==document.activeElement){el.value=data[k];sv(k,data[k])}
