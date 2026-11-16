@@ -421,13 +421,15 @@ function addMoment(){
   var title = document.getElementById('mom-title').value.trim();
   var date  = document.getElementById('mom-date').value;
   var body  = document.getElementById('mom-body').value.trim();
-  if(!title && !body) return;
+  if(!title && !body){ alert('Add a title or some text first ♥'); return; }
   moments.unshift({title:title, date:date, body:body});
   saveData('f_moments', moments);
   document.getElementById('mom-title').value='';
-  document.getElementById('mom-date').value='';
+  document.getElementById('mom-date').valueAsDate=new Date();
   document.getElementById('mom-body').value='';
   renderMoments();
+  var btn=document.querySelector('[onclick="addMoment()"]');
+  if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
 function deleteMoment(i){
   moments.splice(i,1);
@@ -454,13 +456,15 @@ function addJournal(){
   var date  = document.getElementById('jour-date').value;
   var title = document.getElementById('jour-title').value.trim();
   var body  = document.getElementById('jour-body').value.trim();
-  if(!title && !body) return;
+  if(!title && !body){ alert('Add a title or some text first ♥'); return; }
   journalEntries.unshift({date:date, title:title, body:body});
   saveData('f_journal', journalEntries);
-  document.getElementById('jour-date').value='';
+  document.getElementById('jour-date').valueAsDate=new Date();
   document.getElementById('jour-title').value='';
   document.getElementById('jour-body').value='';
   renderJournal();
+  var btn=document.querySelector('[onclick="addJournal()"]');
+  if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
 function deleteJournal(i){
   journalEntries.splice(i,1);
