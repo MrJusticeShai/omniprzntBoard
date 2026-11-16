@@ -229,17 +229,25 @@ function setSync(state,label){
 
 // ----- Data layer: Firestore if configured, else localStorage -----
 var writing = false; // prevent snapshot write-loops
-var pendingWrite = false; // true while a Firestore write is in flight
+var pendingWrites = 0; // count of in-flight Firestore writes
+var queuedSnapshot = null; // last snapshot received while writes were in flight
 
 // Save a single key-value to the state document in Firestore + localStorage
 function saveData(key, value) {
   sv(key, value); // always cache locally
   if (db && !writing) {
-    pendingWrite = true;
+    pendingWrites++;
     var patch = {}; patch[key] = value;
     db.collection('usapp').doc('state').set(patch, {merge:true})
-      .then(function(){ pendingWrite = false; })
-      .catch(function(e){ pendingWrite = false; console.warn('Save failed:',e); });
+      .then(function(){
+        pendingWrites--;
+        if (pendingWrites === 0 && queuedSnapshot) {
+          // Apply the snapshot that arrived while we were writing
+          var data = queuedSnapshot; queuedSnapshot = null;
+          applySnapshot(data);
+        }
+      })
+      .catch(function(e){ pendingWrites--; console.warn('Save failed:',e); });
   }
 }
 
@@ -360,8 +368,7 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 });
 
 // ===== Firestore real-time sync =====
-onDataChanged(function(data){
-  if(pendingWrite) return; // skip snapshot while a local write is in flight
+function applySnapshot(data){
   if(data['ol2']){ol=data['ol2'];renderAll()}
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
@@ -371,6 +378,10 @@ onDataChanged(function(data){
     var k='f_'+el.dataset.save;
     if(typeof data[k]!=='undefined' && el.value!==data[k]){el.value=data[k];sv(k,data[k])}
   });
+}
+onDataChanged(function(data){
+  if(pendingWrites > 0){ queuedSnapshot = data; return; } // hold until write lands
+  applySnapshot(data);
 });
 
 // ===== PHOTO GALLERY (Cloudinary + Firestore) =====
