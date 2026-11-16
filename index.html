@@ -216,7 +216,6 @@ if (fbReady) {
   try {
     firebase.initializeApp(FB);
     db = firebase.firestore();
-    db.enablePersistence({synchronizeTabs:true}).catch(function(){});
     setSync('on','synced');
   } catch(e) {
     console.warn('Firebase init failed:', e);
@@ -394,7 +393,7 @@ if(db){
     db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
       if(doc.exists) applySnapshot(doc.data());
     }).catch(function(){});
-  }, 5000);
+  }, 3000);
 }
 
 // Manual sync — called when user taps the sync badge
