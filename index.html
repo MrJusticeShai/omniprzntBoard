@@ -45,7 +45,58 @@ canvas{display:block;margin:6px auto;max-width:100%}
 table{border-collapse:collapse;width:100%;font-size:.92rem}
 td,th{border-bottom:1px solid var(--soft);padding:6px 8px;text-align:left}
 small{color:var(--mute)}
+
+/* ===== Gallery styles ===== */
+.gbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
+.gbar button{font:inherit;border-radius:999px;border:1px solid var(--soft);background:var(--card);color:var(--ink);padding:8px 14px;cursor:pointer;transition:transform .15s,background .2s}
+.gbar button:hover{transform:scale(1.06)}
+.gbar button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.gbar button.pri{background:var(--accent);color:#fff;border:0}
+.gchip{font:inherit;border-radius:999px;border:1px solid var(--soft);background:var(--card);color:var(--ink);padding:5px 12px;cursor:pointer;transition:transform .15s,background .2s;font-size:.85rem}
+.gchip:hover{transform:scale(1.06)}
+.gchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.gup{background:var(--bg);border:2px dashed var(--accent);border-radius:14px;padding:14px;margin:14px 0;text-align:center;transition:background .2s}
+.gup.drag{background:var(--soft)}
+.gup input[type=text],.gup select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--soft);border-radius:10px;padding:8px;margin:4px;max-width:100%}
+#gstage{position:relative;margin-top:16px}
+#gstage.table{min-height:220px}
+.pol{position:absolute;width:var(--w);perspective:900px;touch-action:none;cursor:grab;transition:box-shadow .2s;animation:drop .6s both}
+.pol:active{cursor:grabbing}
+@keyframes drop{from{opacity:0;transform:translateY(-40px) rotate(20deg)}}
+.pol .in{position:relative;width:100%;aspect-ratio:4/5;transform-style:preserve-3d;transition:transform .6s}
+.pol.flip .in{transform:rotateY(180deg)}
+.pol .f,.pol .b{position:absolute;inset:0;backface-visibility:hidden;background:#fff;color:#4a1d2c;border-radius:6px;padding:8px 8px 0;box-shadow:0 6px 18px rgba(0,0,0,.22);overflow:hidden}
+.pol .f img{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none;border-radius:2px}
+.pol .f p{margin:8px 0;text-align:center;font-style:italic;font-size:.9rem}
+.pol .b{transform:rotateY(180deg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:10px;background:#fff7f9}
+.pol .b button{font-size:.85rem;padding:5px 12px;background:var(--accent);color:#fff;border:0}
+#gstage.heart{margin:20px auto}
+.hp{position:absolute;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;transition:transform .25s;animation:pop .6s both}
+.hp:hover{transform:scale(1.3);z-index:5}
+@keyframes pop{from{opacity:0;transform:scale(0)}}
+.gempty{text-align:center;color:var(--mute);padding:40px 10px}
+#ov{position:fixed;inset:0;z-index:50;display:none;background:#000;color:#fff;overflow:hidden}
+#ov.show{display:block}
+#obg{position:absolute;inset:-30px;background-size:cover;background-position:center;filter:blur(30px) brightness(.5);transition:background-image .6s}
+#oimg{position:absolute;inset:6% 4% 18%;width:92%;height:76%;object-fit:contain;animation:kb 6s ease-in-out both}
+@keyframes kb{from{transform:scale(1) translate(0,0);opacity:0}8%{opacity:1}to{transform:scale(1.12) translate(-1.5%,1%)}}
+#ocap{position:absolute;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));text-align:center;font-size:1.2rem;font-style:italic;text-shadow:0 2px 8px #000;padding:0 14px}
+#octl{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:center}
+#octl button{background:rgba(255,255,255,.18);color:#fff;border:0}
+#ox{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:14px;background:rgba(255,255,255,.18);color:#fff;border:0}
+#ocount{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));left:16px;font-size:.9rem;opacity:.8}
+.burst{position:fixed;pointer-events:none;z-index:99;font-size:22px;color:var(--accent);animation:b 1s ease-out forwards}
+@keyframes b{to{transform:translate(var(--dx),var(--dy)) scale(1.6);opacity:0}}
+.sync-badge{position:fixed;bottom:14px;right:14px;z-index:20;font-size:.75rem;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:4px 12px;color:var(--mute);box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;align-items:center;gap:5px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.sync-dot.on{background:#4caf50}
+.sync-dot.off{background:#e63b6f}
 </style>
+
+<!-- Firebase SDK (compat mode for browser) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
 <div class="hearts" id="hearts" aria-hidden="true"></div>
@@ -77,10 +128,10 @@ small{color:var(--mute)}
 
 <details><summary>📚 Reading Together</summary><div class="body">
 <div id="v_Book"></div>
-<p><small>Current book, where we’re up to, favourite lines:</small></p>
+<p><small>Current book, where we're up to, favourite lines:</small></p>
 <input type="text" data-save="book" placeholder="Our current book…">
 <div class="row"></div>
-<textarea data-save="booknotes" placeholder="Where we’re up to, favourite moments, discussion questions…"></textarea>
+<textarea data-save="booknotes" placeholder="Where we're up to, favourite moments, discussion questions…"></textarea>
 </div></details>
 
 <details><summary>🌅 Daily Discovery</summary><div class="body">
@@ -99,6 +150,20 @@ small{color:var(--mute)}
 <textarea data-save="moments" placeholder="First message, first call, first meet-up, inside jokes…"></textarea>
 </div></details>
 
+<!-- ===== Photo Gallery ===== -->
+<details open id="gallery-section"><summary>📸 Photo Gallery <span class="chip" id="gcount"></span></summary><div class="body">
+<div class="gbar">
+<button id="gvt" class="on">🃏 Table</button><button id="gvh">💗 Heart wall</button><button id="gvs" class="pri">▶ Play our story</button><button id="gvr">🎲 Surprise me</button>
+</div>
+<div class="gbar" id="gchips"></div>
+<div class="gup" id="gup">
+<div>📷 Drop photos here, or <button class="pri" id="gpick">choose photos</button><input type="file" id="gfile" accept="image/*" multiple hidden></div>
+<div><input type="text" id="gcap" placeholder="Caption (optional)" maxlength="60"><select id="gchs"></select><button class="pri" id="ggo">Add to album ♥</button></div>
+<small id="gst"></small>
+</div>
+<div id="gstage"></div>
+</div></details>
+
 <details><summary>🔄 Weekly Check-in</summary><div class="body">
 <ul>
 <li>Best moment this week?</li><li>One thing I appreciated about you</li>
@@ -109,9 +174,81 @@ small{color:var(--mute)}
 </div></details>
 </main>
 
+<!-- Gallery overlay -->
+<div id="ov"><div id="obg"></div><img id="oimg" alt=""><div id="ocount"></div><button id="ox">✕</button><div id="ocap"></div>
+<div id="octl"><button id="op">◀</button><button id="oplay">⏸</button><button id="oheart">♡</button><button id="odel">🗑</button><button id="on">▶</button></div></div>
+
+<div class="sync-badge"><span class="sync-dot" id="sdot"></span><span id="stxt">connecting…</span></div>
+
 <script>
+// ===== FIREBASE CONFIG =====
+// Get these from: Firebase Console → ⚙ Project Settings → General → Your apps → Web app config
+var FB = {
+  apiKey: "AIzaSyDeW8Y1jIBaem5DxE6vQNFvDCyJdlqvH9k",
+  authDomain: "omniprzntus.firebaseapp.com",
+  projectId: "omniprzntus",
+  storageBucket: "omniprzntus.firebasestorage.app",
+  messagingSenderId: "548799885436",
+  appId: "1:548799885436:web:fffcd66969892473edd9f9"
+};
+// ===== CLOUDINARY CONFIG =====
+// cloudName: from Cloudinary Dashboard (top-left)
+// uploadPreset: Settings → Upload → Upload presets → create an UNSIGNED preset
+var CLOUD_NAME = "dizghimqh";
+var UPLOAD_PRESET = "omniprzntUs";
+// ===========================
+
+// ----- localStorage helpers (cache + offline fallback) -----
 function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+// ----- Firebase init -----
+var fbReady = FB.apiKey && FB.apiKey.length > 10 && FB.apiKey.indexOf("PASTE") === -1;
+var db = null, fbUnsub = {};
+
+if (fbReady) {
+  try {
+    firebase.initializeApp(FB);
+    db = firebase.firestore();
+    db.enablePersistence({synchronizeTabs:true}).catch(function(){});
+    setSync('on','synced');
+  } else {
+    setSync('off','local only');
+  }
+} else {
+    setSync('off','local only');
+}
+
+function setSync(state,label){
+  var dot=$('sdot'),t=$('stxt');
+  dot.className='sync-dot '+state; t.textContent=label;
+}
+
+// ----- Data layer: Firestore if configured, else localStorage -----
+var writing = false; // prevent snapshot write-loops
+
+// Save a single key-value to the state document in Firestore + localStorage
+function saveData(key, value) {
+  sv(key, value); // always cache locally
+  if (db && !writing) {
+    var patch = {}; patch[key] = value;
+    db.collection('usapp').doc('state').set(patch, {merge:true})
+      .catch(function(e){console.warn('Save failed:',e)});
+  }
+}
+
+// Listen for real-time updates from Firestore
+function onDataChanged(callback) {
+  if (!db) return;
+  fbUnsub.state = db.collection('usapp').doc('state').onSnapshot(function(doc){
+    if (!doc.exists) return;
+    writing = true;
+    callback(doc.data());
+    writing = false;
+  }, function(e){console.warn('Snapshot error:',e)});
+}
 
 // floating hearts
 var H=document.getElementById('hearts');
@@ -126,16 +263,16 @@ var ol=ld('ol2',null)||DEF;
 function fill(el,fn){el.innerHTML='';var n=0;
 ol.forEach(function(it,i){if(!fn(it))return;n++;var l=document.createElement('label');l.className='item'+(it[2]?' done':'');
 var cb=document.createElement('input');cb.type='checkbox';cb.checked=!!it[2];
-cb.onchange=function(){ol[i][2]=cb.checked?1:0;sv('ol2',ol);renderAll()};
+cb.onchange=function(){ol[i][2]=cb.checked?1:0;saveData('ol2',ol);renderAll()};
 var sp=document.createElement('span');sp.textContent=it[0];var ch=document.createElement('span');ch.className='chip';ch.textContent=it[1];ch.style.marginLeft='auto';ch.style.textDecoration='none';
 l.appendChild(cb);l.appendChild(sp);l.appendChild(ch);el.appendChild(l)});
 if(!n){el.innerHTML='<p><small>Nothing here yet ♥</small></p>'}return n}
 var views=["Adventure","Trip","Book"];
 views.forEach(function(t){var h=document.getElementById('v_'+t);
 h.innerHTML='<div class="lst"></div><div class="row"><input type="text" placeholder="Add to this list…"><button>Add</button></div>';
-h.querySelector('button').onclick=function(){var inp=h.querySelector('input');if(inp.value.trim()){ol.push([inp.value.trim(),t,0]);sv('ol2',ol);inp.value='';renderAll()}}});
+h.querySelector('button').onclick=function(){var inp=h.querySelector('input');if(inp.value.trim()){ol.push([inp.value.trim(),t,0]);saveData('ol2',ol);inp.value='';renderAll()}}});
 var sel=document.getElementById('newt');TYPES.forEach(function(t){var o=document.createElement('option');o.textContent=t;sel.appendChild(o)});
-document.getElementById('addi').onclick=function(){var v=document.getElementById('newi');if(v.value.trim()){ol.push([v.value.trim(),sel.value,0]);sv('ol2',ol);v.value='';renderAll()}};
+document.getElementById('addi').onclick=function(){var v=document.getElementById('newi');if(v.value.trim()){ol.push([v.value.trim(),sel.value,0]);saveData('ol2',ol);v.value='';renderAll()}};
 function renderAll(){
 var ni=fill(document.getElementById('inc'),function(x){return !x[2]});
 var nd=fill(document.getElementById('done'),function(x){return x[2]});
@@ -161,21 +298,205 @@ var tot=ang+Math.PI*2*(5+Math.random()*3),st=ang,t0=null,dur=4200;
 if(p<1)requestAnimationFrame(f);else{spinning=false;var n=ideas.length,a=2*Math.PI/n;
 var pos=((-ang)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);var idx=Math.floor(pos/a)%n;
 document.getElementById('wres').textContent='💘 '+ideas[idx]}})(performance.now())};
-document.getElementById('addd').onclick=function(){var v=document.getElementById('newd');if(v.value.trim()){ideas.push(v.value.trim());sv('ideas',ideas);v.value='';wheel()}};
+document.getElementById('addd').onclick=function(){var v=document.getElementById('newd');if(v.value.trim()){ideas.push(v.value.trim());saveData('ideas',ideas);v.value='';wheel()}};
 wheel();
 
 // daily discovery
-var qs=["What’s something you wish people would take the time to discover about you, instead of assuming from first impressions?","What’s a childhood experience that shaped who you’ve become?","What does being genuinely loved look like in your everyday life?","What’s an opinion you hold that not everyone agrees with?","What’s something you’ve always wanted to try but haven’t had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"];
+var qs=["What's something you wish people would take the time to discover about you, instead of assuming from first impressions?","What's a childhood experience that shaped who you've become?","What does being genuinely loved look like in your everyday life?","What's an opinion you hold that not everyone agrees with?","What's something you've always wanted to try but haven't had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"];
 var qi=ld('qi',0);function showQ(){document.getElementById('dq').textContent='Day '+(qi+1)+': '+qs[qi];sv('qi',qi)}
-document.getElementById('dnext').onclick=function(){qi=(qi+1)%qs.length;showQ()};
-document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;showQ()};showQ();
+document.getElementById('dnext').onclick=function(){qi=(qi+1)%qs.length;saveData('qi',qi);showQ()};
+document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;saveData('qi',qi);showQ()};showQ();
 
 // topic tracker
 var tt=[["Family structure","In progress","Childhood memories"],["Religion and beliefs","In progress","How beliefs show up daily"],["Past relationships","In progress","Lessons and growth"],["Future ambitions","In progress","What success means to her"],["Reading","In progress","Favourite books and genres"],["Romance and affection","In progress","Little gestures that matter"],["Conflict and repair","In progress","How we repair after disagreements"],["Travel and adventure","In progress","Dream destinations"],["Humour and playfulness","In progress","This-or-that rounds"]];
 document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
 
-// saved text fields
-document.querySelectorAll('[data-save]').forEach(function(el){var k='f_'+el.dataset.save;el.value=ld(k,'');el.oninput=function(){sv(k,el.value)}});
+// saved text fields (sync to Firestore)
+document.querySelectorAll('[data-save]').forEach(function(el){
+  var k='f_'+el.dataset.save; el.value=ld(k,'');
+  var to=null;
+  el.oninput=function(){
+    sv(k,el.value);
+    if(to)clearTimeout(to);
+    to=setTimeout(function(){saveData(k,el.value)},800); // debounce Firestore writes
+  }
+});
+
+// ===== Firestore real-time sync =====
+onDataChanged(function(data){
+  if(data['ol2']){ol=data['ol2'];renderAll()}
+  if(data['ideas']){ideas=data['ideas'];wheel()}
+  if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
+  document.querySelectorAll('[data-save]').forEach(function(el){
+    var k='f_'+el.dataset.save;
+    if(typeof data[k]!=='undefined' && el.value!==data[k]){el.value=data[k];sv(k,data[k])}
+  });
+});
+
+// ===== PHOTO GALLERY (Cloudinary + Firestore) =====
+var GCH=[["first-date","First date"],["adventures","Adventures"],["trips","Trips"],["everyday","Everyday"]];
+var gphotos=[], gfavs=[], gview='table', gfilt='all', gidx=0, gtimer=null, gplaying=false;
+
+// Cloudinary URL helpers
+function cThumb(pid){return 'https://res.cloudinary.com/'+CLOUD_NAME+'/image/upload/c_fill,w_400,h_500,q_auto/'+pid+'.jpg'}
+function cFull(pid){return 'https://res.cloudinary.com/'+CLOUD_NAME+'/image/upload/c_limit,w_1600,q_auto/'+pid+'.jpg'}
+
+function gChLabel(k){for(var i=0;i<GCH.length;i++)if(GCH[i][0]===k)return GCH[i][1];return 'Everyday'}
+function gFmt(d){try{return new Date(d).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}catch(e){return ''}}
+
+// populate chapter select
+GCH.forEach(function(c){var o=document.createElement('option');o.value=c[0];o.textContent=c[1];$('gchs').appendChild(o)});
+
+// Upload to Cloudinary
+async function uploadCloudinary(file){
+  var fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',UPLOAD_PRESET);
+  var r=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload',{method:'POST',body:fd});
+  if(!r.ok) throw new Error('Upload failed ('+r.status+')');
+  var d=await r.json();
+  return d.public_id;
+}
+
+// Load photos from Firestore (or localStorage fallback)
+function loadPhotos(){
+  if(db){
+    fbUnsub.photos=db.collection('photos').orderBy('date','desc').onSnapshot(function(snap){
+      gphotos=[];
+      snap.forEach(function(doc){var d=doc.data();d.id=doc.id;gphotos.push(d)});
+      if(gfavs.length===0&&ld('gfavs',null))gfavs=ld('gfavs',[]);
+      gRend();
+    },function(e){console.warn('Photos sync:',e)});
+  } else {
+    gphotos=ld('gphotos',[]);
+    gfavs=ld('gfavs',[]);
+    gRend();
+  }
+}
+
+// Save photo to Firestore
+async function addPhoto(file,cap,ch){
+  if(CLOUD_NAME.indexOf('PASTE')!==-1){$('gst').textContent='Set CLOUD_NAME and UPLOAD_PRESET in the code first.';return}
+  $('gst').textContent='Uploading to Cloudinary…';
+  var pid=await uploadCloudinary(file);
+  var photo={publicId:pid,cap:cap,ch:ch,date:Date.now()};
+  if(db){
+    $('gst').textContent='Saving to gallery…';
+    await db.collection('photos').add(photo);
+  } else {
+    photo.id='p'+Date.now();
+    gphotos.unshift(photo);
+    saveData('gphotos',gphotos);
+  }
+  $('gst').textContent='Added ♥';
+  setTimeout(function(){$('gst').textContent=''},2500);
+}
+
+// Delete photo
+async function delPhoto(p){
+  if(!confirm('Remove this photo from the gallery?'))return false;
+  if(db){
+    await db.collection('photos').doc(p.id).delete();
+  } else {
+    gphotos=gphotos.filter(function(x){return x!==p});
+    saveData('gphotos',gphotos);
+  }
+  var i=gfavs.indexOf(p.id);if(i>-1){gfavs.splice(i,1);saveData('gfavs',gfavs)}
+  return true;
+}
+
+// favorites
+function gBurst(x,y,n){for(var i=0;i<(n||8);i++){var s=document.createElement('span');s.className='burst';s.textContent='♥';s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',(Math.random()*160-80)+'px');s.style.setProperty('--dy',(-40-Math.random()*120)+'px');document.body.appendChild(s);setTimeout(function(e){e.remove()},1000,s)}}
+function gTog(id,x,y){var i=gfavs.indexOf(id);if(i>-1)gfavs.splice(i,1);else{gfavs.push(id);gBurst(x,y,10)}saveData('gfavs',gfavs)}
+
+// chips
+function gChips(){
+  var h='<button class="gchip'+(gfilt==='all'?' on':'')+'" data-f="all">All</button>'+GCH.map(function(c){return '<button class="gchip'+(gfilt===c[0]?' on':'')+'" data-f="'+c[0]+'">'+c[1]+'</button>'}).join('')+'<button class="gchip'+(gfilt==='fav'?' on':'')+'" data-f="fav">♥ Favourites</button>';
+  $('gchips').innerHTML=h;$('gchips').querySelectorAll('button').forEach(function(b){b.onclick=function(){gfilt=b.dataset.f;gRend()}})
+}
+
+function gList(){return gphotos.filter(function(p){return gfilt==='all'||(gfilt==='fav'?gfavs.indexOf(p.id)>-1:p.ch===gfilt)})}
+var gz=10;
+
+function gRend(){
+  gChips();var L=gList(),S=$('gstage');S.innerHTML='';
+  $('gcount').textContent=gphotos.length;
+  if(!L.length){S.className='';S.innerHTML='<div class="gempty">No photos here yet 💗<br>Add your first one above.</div>';return}
+  gview==='table'?gTable(L,S):gHeart(L,S)
+}
+
+function gTable(L,S){
+  S.className='table';var W=S.clientWidth,w=Math.min(200,W/2-14),cols=Math.max(2,Math.floor(W/(w+10))),h=w*1.25,gx=(W-cols*w)/(cols+1);
+  S.style.setProperty('--w',w+'px');S.style.height=(Math.ceil(L.length/cols)*(h+26)+40)+'px';
+  L.forEach(function(p,i){
+    var d=document.createElement('div');d.className='pol';d.style.animationDelay=(i*70)+'ms';
+    d.style.left=(gx+(i%cols)*(w+gx)+Math.random()*10-5)+'px';d.style.top=(Math.floor(i/cols)*(h+26)+Math.random()*10-5)+'px';
+    var rot=Math.random()*10-5;d.style.transform='rotate('+rot+'deg)';
+    var fav=gfavs.indexOf(p.id)>-1;
+    d.innerHTML='<div class="in"><div class="f"><img src="'+cThumb(p.publicId)+'" alt="" loading="lazy"><p>'+esc(p.cap||'♥')+'</p></div><div class="b"><b>'+esc(p.cap||'Us')+'</b><small>'+esc(gChLabel(p.ch))+' · '+gFmt(p.date)+'</small><button data-a="h">'+(fav?'♥':'♡')+' Love</button><button data-a="o">Open</button><button data-a="d" style="background:#9a6577">🗑 Remove</button></div></div>';
+    var sx,sy,ox,oy,mv=false,dn=false;
+    d.onpointerdown=function(e){if(e.target.tagName==='BUTTON')return;dn=true;mv=false;sx=e.clientX;sy=e.clientY;ox=d.offsetLeft;oy=d.offsetTop;d.setPointerCapture(e.pointerId);d.style.zIndex=++gz};
+    d.onpointermove=function(e){if(!dn)return;var dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>6)mv=true;if(mv){d.style.left=ox+dx+'px';d.style.top=oy+dy+'px';d.style.transform='rotate('+rot+'deg) scale(1.05)'}};
+    d.onpointerup=function(){if(!dn)return;dn=false;d.style.transform='rotate('+rot+'deg)';if(!mv)d.classList.toggle('flip')};
+    d.ondblclick=function(e){gTog(p.id,e.clientX,e.clientY);gRend()};
+    d.onclick=function(e){var a=e.target.dataset&&e.target.dataset.a;if(a==='h'){gTog(p.id,e.clientX,e.clientY);e.target.textContent=(gfavs.indexOf(p.id)>-1?'♥':'♡')+' Love'}if(a==='o')openOv(L.indexOf(p),false);if(a==='d')delPhoto(p).then(function(ok){if(ok)gRend()})};
+    S.appendChild(d)
+  })
+}
+
+function gHeart(L,S){
+  S.className='heart';var W=Math.min(S.parentNode.clientWidth,640);S.style.width=W+'px';S.style.height=(W*.95)+'px';
+  var n=L.length,n0=n>6?Math.ceil(n*.65):n,sz=Math.max(46,Math.min(110,W/(n>14?7.5:5.5))),k=W/36;
+  L.forEach(function(p,i){
+    var ring=i<n0,m=ring?i:i-n0,c=ring?n0:n-n0,t=(m/c)*Math.PI*2+(ring?0:.3),sc=ring?1:.5;
+    var x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+    var im=document.createElement('img');im.className='hp';im.src=cThumb(p.publicId);im.alt=p.cap;im.title=p.cap;
+    im.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(W/2+x*k*sc-sz/2)+'px;top:'+(W*.46+y*k*sc*1.05-sz/2+(ring?0:W*.03))+'px;animation-delay:'+(i*90)+'ms';
+    im.onclick=function(){openOv(i,false)};S.appendChild(im)
+  })
+}
+
+// overlay / story
+function show(){var L=gList();if(!L.length)return;gidx=(gidx+L.length)%L.length;var p=L[gidx],im=$('oimg');
+im.style.animation='none';void im.offsetWidth;im.style.animation='';im.src=cFull(p.publicId);$('obg').style.backgroundImage='url('+cThumb(p.publicId)+')';
+$('ocap').textContent=(p.cap?p.cap+' · ':'')+gChLabel(p.ch)+' · '+gFmt(p.date);$('ocount').textContent=(gidx+1)+' / '+L.length;$('oheart').textContent=gfavs.indexOf(p.id)>-1?'♥':'♡'}
+function play(on){gplaying=on;clearInterval(gtimer);$('oplay').textContent=on?'⏸':'▶ Play';if(on)gtimer=setInterval(function(){gidx++;show()},5500)}
+function openOv(i,pl){gidx=i;$('ov').classList.add('show');show();play(pl)}
+function closeOv(){$('ov').classList.remove('show');play(false)}
+$('on').onclick=function(){gidx++;show()};$('op').onclick=function(){gidx--;show()};$('oplay').onclick=function(){play(!gplaying)};$('ox').onclick=closeOv;
+$('odel').onclick=function(){var L=gList();if(!L.length)return;var was=gplaying;play(false);delPhoto(L[gidx]).then(function(ok){if(!ok){play(was);return}gRend();if(!gList().length)closeOv();else show()})};
+$('oheart').onclick=function(e){var L=gList();gTog(L[gidx].id,e.clientX,e.clientY);show()};
+document.addEventListener('keydown',function(e){if(!$('ov').classList.contains('show'))return;if(e.key==='Escape')closeOv();if(e.key==='ArrowRight'){gidx++;show()}if(e.key==='ArrowLeft'){gidx--;show()}});
+var swx=0;$('ov').addEventListener('touchstart',function(e){swx=e.touches[0].clientX},{passive:true});
+$('ov').addEventListener('touchend',function(e){var d=e.changedTouches[0].clientX-swx;if(Math.abs(d)>50){gidx+=d<0?1:-1;show()}});
+
+// view toggles
+$('gvt').onclick=function(){gview='table';$('gvt').classList.add('on');$('gvh').classList.remove('on');gRend()};
+$('gvh').onclick=function(){gview='heart';$('gvh').classList.add('on');$('gvt').classList.remove('on');gRend()};
+$('gvs').onclick=function(){if(gList().length)openOv(0,true)};
+$('gvr').onclick=function(e){var L=gList();if(!L.length)return;gBurst(e.clientX,e.clientY,14);openOv(Math.floor(Math.random()*L.length),false)};
+
+// upload handling
+var gqueue=[];
+function gTake(fs){gqueue=Array.prototype.slice.call(fs).filter(function(f){return /^image\//.test(f.type)});$('gst').textContent=gqueue.length?gqueue.length+' photo(s) ready. Add a caption if you like, then press "Add to album".':''}
+$('gpick').onclick=function(){$('gfile').click()};$('gfile').onchange=function(){gTake(this.files)};
+['dragenter','dragover'].forEach(function(n){$('gup').addEventListener(n,function(e){e.preventDefault();$('gup').classList.add('drag')})});
+['dragleave','drop'].forEach(function(n){$('gup').addEventListener(n,function(e){e.preventDefault();$('gup').classList.remove('drag')})});
+$('gup').addEventListener('drop',function(e){gTake(e.dataTransfer.files)});
+$('ggo').onclick=async function(e){
+  if(!gqueue.length){$('gst').textContent='Choose a photo first 💗';return}
+  var ch=$('gchs').value,cap=$('gcap').value.trim(),q=gqueue,x=e.clientX,y=e.clientY;gqueue=[];
+  for(var f of q){
+    try{await addPhoto(f,cap,ch)}catch(err){$('gst').textContent='Couldn\'t save: '+err.message;return}
+  }
+  $('gst').textContent='All saved ♥';$('gcap').value='';gBurst(x,y,14);
+};
+
+// init gallery
+loadPhotos();
+window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(gRend,250)});
+
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 </script>
 </body>
 </html>
