@@ -369,7 +369,11 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 
 // ===== Firestore real-time sync =====
 function applySnapshot(data){
-  if(data['ol2']){ol=data['ol2'];renderAll()}
+  if(data['ol2'] && Array.isArray(data['ol2'])){
+    // Firestore can return nested arrays — ensure each item is a proper array
+    ol=data['ol2'].map(function(it){ return Array.isArray(it)?it:[it[0]||'',it[1]||'Date',it[2]||0]; });
+    renderAll();
+  }
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
   if(data['f_topics']){tt=data['f_topics'];document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('')}
@@ -399,8 +403,14 @@ function manualSync(){
   if(!db){ setSync('off','local only'); return; }
   var t=$('stxt'); t.textContent='syncing…';
   db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
-    if(doc.exists){ applySnapshot(doc.data()); setSync('on','synced'); }
-  }).catch(function(e){ console.warn('Manual sync failed:',e); setSync('off','error'); });
+    if(doc.exists){
+      var data=doc.data();
+      var checked=data['ol2']?data['ol2'].filter(function(x){return x[2]}).length:'?';
+      var total=data['ol2']?data['ol2'].length:'?';
+      applySnapshot(data);
+      setSync('on','✓ '+checked+'/'+total+' done');
+    }
+  }).catch(function(e){ setSync('off','err:'+e.code); });
 }
 
 // ===== PHOTO GALLERY (Cloudinary + Firestore) =====
