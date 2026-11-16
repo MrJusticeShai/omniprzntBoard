@@ -229,15 +229,17 @@ function setSync(state,label){
 
 // ----- Data layer: Firestore if configured, else localStorage -----
 var writing = false; // prevent snapshot write-loops
+var pendingWrite = false; // true while a Firestore write is in flight
 
 // Save a single key-value to the state document in Firestore + localStorage
 function saveData(key, value) {
   sv(key, value); // always cache locally
-  suppressSync = Date.now() + 20; // suppress onSnapshot reverts for 20ms after local change
   if (db && !writing) {
+    pendingWrite = true;
     var patch = {}; patch[key] = value;
     db.collection('usapp').doc('state').set(patch, {merge:true})
-      .catch(function(e){console.warn('Save failed:',e)});
+      .then(function(){ pendingWrite = false; })
+      .catch(function(e){ pendingWrite = false; console.warn('Save failed:',e); });
   }
 }
 
@@ -358,9 +360,8 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 });
 
 // ===== Firestore real-time sync =====
-var suppressSync = 0; // timestamp until which onSnapshot updates are ignored (prevents revert of local changes)
 onDataChanged(function(data){
-  if(Date.now() < suppressSync) return; // skip if we just made a local change
+  if(pendingWrite) return; // skip snapshot while a local write is in flight
   if(data['ol2']){ol=data['ol2'];renderAll()}
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
