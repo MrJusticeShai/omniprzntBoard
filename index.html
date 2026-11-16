@@ -321,8 +321,8 @@ function seedDefaults() {
     f_book: "",
     f_booknotes: "",
     f_dnotes: "",
-    f_journal: "",
-    f_moments: "",
+    f_journal: [],
+    f_moments: [],
     f_weekly: "",
     f_topics: [{a:"Family structure",b:"In progress",c:"Childhood memories"},{a:"Religion and beliefs",b:"In progress",c:"How beliefs show up daily"},{a:"Past relationships",b:"In progress",c:"Lessons and growth"},{a:"Future ambitions",b:"In progress",c:"What success means to her"},{a:"Reading",b:"In progress",c:"Favourite books and genres"},{a:"Romance and affection",b:"In progress",c:"Little gestures that matter"},{a:"Conflict and repair",b:"In progress",c:"How we repair after disagreements"},{a:"Travel and adventure",b:"In progress",c:"Dream destinations"},{a:"Humour and playfulness",b:"In progress",c:"This-or-that rounds"}],
     f_questions: ["What\u2019s something you wish people would take the time to discover about you, instead of assuming from first impressions?","What\u2019s a childhood experience that shaped who you\u2019ve become?","What does being genuinely loved look like in your everyday life?","What\u2019s an opinion you hold that not everyone agrees with?","What\u2019s something you\u2019ve always wanted to try but haven\u2019t had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"],
@@ -520,12 +520,12 @@ function applySnapshot(data){
     document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
   }
   if(data['f_questions']){qs=data['f_questions'];showQ()}
-  // Moments
-  if(data['f_moments'] && Array.isArray(data['f_moments'])){
+  // Moments — only apply if incoming data is an array and not older than local
+  if(data['f_moments'] && Array.isArray(data['f_moments']) && data['f_moments'].length >= moments.length){
     moments=data['f_moments']; sv('f_moments',moments); renderMoments();
   }
-  // Journal
-  if(data['f_journal'] && Array.isArray(data['f_journal'])){
+  // Journal — only apply if incoming data is an array and not older than local
+  if(data['f_journal'] && Array.isArray(data['f_journal']) && data['f_journal'].length >= journalEntries.length){
     journalEntries=data['f_journal']; sv('f_journal',journalEntries); renderJournal();
   }
   // Plain text fields
