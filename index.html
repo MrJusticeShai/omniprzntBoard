@@ -90,7 +90,7 @@ small{color:var(--mute)}
 #ocount{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));left:16px;font-size:.9rem;opacity:.8}
 .burst{position:fixed;pointer-events:none;z-index:99;font-size:22px;color:var(--accent);animation:b 1s ease-out forwards}
 @keyframes b{to{transform:translate(var(--dx),var(--dy)) scale(1.6);opacity:0}}
-.sync-badge{position:fixed;bottom:14px;right:14px;z-index:20;font-size:.75rem;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:4px 12px;color:var(--mute);box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.sync-badge{position:fixed;bottom:14px;right:14px;z-index:20;font-size:.75rem;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:4px 12px;color:var(--mute);box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;font-family:inherit;line-height:1.4}
 .sync-badge:active{opacity:.7}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
 .sync-dot.on{background:#4caf50}
@@ -182,7 +182,7 @@ small{color:var(--mute)}
 <div id="ov"><div id="obg"></div><img id="oimg" alt=""><div id="ocount"></div><button id="ox">✕</button><div id="ocap"></div>
 <div id="octl"><button id="op">◀</button><button id="oplay">⏸</button><button id="oheart">♡</button><button id="odel">🗑</button><button id="on">▶</button></div></div>
 
-<div class="sync-badge" onclick="manualSync()" title="Tap to sync now"><span class="sync-dot" id="sdot"></span><span id="stxt">connecting…</span></div>
+<button class="sync-badge" onclick="manualSync()" title="Tap to sync now"><span class="sync-dot" id="sdot"></span><span id="stxt">connecting…</span></button>
 
 <script>
 // ===== FIREBASE CONFIG =====
@@ -262,7 +262,7 @@ function onDataChanged(callback) {
       seedDefaults();
       return;
     }
-    setSync('on', 'live ✓ ' + new Date().toLocaleTimeString());
+    setSync('on', 'live ✓ ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
     writing = true;
     callback(doc.data());
     writing = false;
@@ -389,7 +389,7 @@ if(db){
   setInterval(function(){
     if(pendingWrites > 0) return;
     db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
-      if(doc.exists){ applySnapshot(doc.data()); setSync('on','poll ✓ '+new Date().toLocaleTimeString()); }
+      if(doc.exists){ applySnapshot(doc.data()); setSync('on','poll ✓ '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})); }
     }).catch(function(e){ setSync('off','poll err: '+e.code); });
   }, 3000);
 }
