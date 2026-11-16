@@ -252,7 +252,14 @@ function onDataChanged(callback) {
     writing = true;
     callback(doc.data());
     writing = false;
-  }, function(e){console.warn('Snapshot error:',e)});
+  }, function(e){
+    console.warn('Snapshot error:',e);
+    // Firestore unavailable — fall back to localStorage only
+    db = null;
+    setSync('off','local only');
+    // Re-render from local data so UI is responsive
+    renderAll(); wheel(); showQ();
+  });
 }
 
 // Seed all original hardcoded data into Firestore (runs once when DB is empty)
