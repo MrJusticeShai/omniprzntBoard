@@ -406,7 +406,8 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 });
 
 // ===== Our Moments =====
-var moments = ld('f_moments', []);
+var moments = Array.isArray(ld('f_moments', [])) ? ld('f_moments', []) : [];
+sv('f_moments', moments); // fix any legacy string value in localStorage
 function renderMoments(){
   var c = document.getElementById('mom-cards'); if(!c) return;
   c.innerHTML = '';
@@ -445,7 +446,8 @@ function deleteMoment(i){
 renderMoments();
 
 // ===== Conversation Journal =====
-var journalEntries = ld('f_journal', []);
+var journalEntries = Array.isArray(ld('f_journal', [])) ? ld('f_journal', []) : [];
+sv('f_journal', journalEntries); // fix any legacy string value in localStorage
 function renderJournal(){
   var c = document.getElementById('jour-cards'); if(!c) return;
   c.innerHTML = '';
