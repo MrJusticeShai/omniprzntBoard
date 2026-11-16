@@ -262,15 +262,13 @@ function onDataChanged(callback) {
       seedDefaults();
       return;
     }
+    setSync('on', 'live ✓ ' + new Date().toLocaleTimeString());
     writing = true;
     callback(doc.data());
     writing = false;
   }, function(e){
-    console.warn('Snapshot error:',e);
-    // Firestore unavailable — fall back to localStorage only
+    setSync('off', 'error: ' + e.code);
     db = null;
-    setSync('off','local only');
-    // Re-render from local data so UI is responsive
     renderAll(); wheel(); showQ();
   });
 }
@@ -389,10 +387,10 @@ onDataChanged(function(data){
 // Polling fallback — catches updates the real-time listener misses (e.g. backgrounded tab, mobile)
 if(db){
   setInterval(function(){
-    if(pendingWrites > 0) return; // don't overwrite mid-write
+    if(pendingWrites > 0) return;
     db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
-      if(doc.exists) applySnapshot(doc.data());
-    }).catch(function(){});
+      if(doc.exists){ applySnapshot(doc.data()); setSync('on','poll ✓ '+new Date().toLocaleTimeString()); }
+    }).catch(function(e){ setSync('off','poll err: '+e.code); });
   }, 3000);
 }
 
