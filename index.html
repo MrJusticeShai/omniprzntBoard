@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Us 💛</title>
+<style>
+:root{--bg:#fff0f3;--card:#ffffff;--ink:#4a1d2c;--accent:#e63b6f;--soft:#ffd6e0;--mute:#9a6577;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d0f15;--card:#2a1620;--ink:#ffe3ea;--accent:#ff6f96;--soft:#4a2331;--mute:#c79aab;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1d0f15;--card:#2a1620;--ink:#ffe3ea;--accent:#ff6f96;--soft:#4a2331;--mute:#c79aab;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;min-height:100vh;overflow-x:hidden}
+.hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.hearts span{position:absolute;bottom:-60px;color:var(--accent);opacity:.18;animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-115vh) rotate(25deg)}}
+main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:28px 16px 60px}
+h1{text-align:center;font-size:2.2rem;margin:10px 0 4px}
+.sub{text-align:center;color:var(--mute);margin:0 0 22px;font-style:italic}
+.beat{display:inline-block;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+details{background:var(--card);border:1px solid var(--soft);border-radius:16px;margin:12px 0;box-shadow:0 2px 10px rgba(230,59,111,.08);transition:box-shadow .2s}
+details[open]{box-shadow:0 6px 22px rgba(230,59,111,.18)}
+summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:1.1rem;font-weight:bold;display:flex;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"♥";margin-left:auto;color:var(--accent);transition:transform .3s}
+details[open] summary::after{transform:rotate(180deg) scale(1.3)}
+.body{padding:0 18px 18px;animation:fly .35s ease}
+@keyframes fly{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.chip{display:inline-block;background:var(--soft);border-radius:999px;padding:3px 10px;font-size:.8rem;margin:2px}
+button{background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:inherit;cursor:pointer;transition:transform .15s}
+button:hover{transform:scale(1.05)}
+input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--soft);border-radius:10px;padding:9px}
+textarea{min-height:90px}select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--soft);border-radius:10px;padding:9px}
+.row{display:flex;gap:8px;align-items:center;margin:6px 0}
+label.item{display:flex;gap:10px;align-items:flex-start;padding:7px 4px;border-bottom:1px dashed var(--soft)}
+label.item input{accent-color:var(--accent);margin-top:4px}
+label.item.done span{text-decoration:line-through;opacity:.55}
+.bar{height:10px;background:var(--soft);border-radius:99px;overflow:hidden;margin:8px 0 12px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s}
+.q{font-size:1.15rem;text-align:center;padding:14px;background:var(--bg);border-radius:12px;margin:10px 0}
+canvas{display:block;margin:6px auto;max-width:100%}
+.res{text-align:center;font-size:1.2rem;font-weight:bold;min-height:1.6em;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+td,th{border-bottom:1px solid var(--soft);padding:6px 8px;text-align:left}
+small{color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="hearts" id="hearts" aria-hidden="true"></div>
+<main>
+<h1>Us <span class="beat">💛</span></h1>
+<p class="sub">Babyydiamond · beautifulGirl · thabyBear</p>
+
+<details open><summary>⏳ Incoming <span class="chip" id="ninc"></span></summary><div class="body">
+<small>Tick something and it flies over to Done. Untick it in Done to bring it back.</small>
+<div id="inc"></div>
+<div class="row"><input type="text" id="newi" placeholder="Add something we want to do…"><select id="newt"></select><button id="addi">Add</button></div>
+</div></details>
+
+<details><summary>✅ Done <span class="chip" id="ndone"></span></summary><div class="body">
+<div class="bar"><i id="pbar"></i></div>
+<div id="done"></div>
+</div></details>
+
+<details><summary>🗺️ Adventure Bucket List</summary><div class="body"><div id="v_Adventure"></div></div></details>
+
+<details><summary>🎡 Date Spinner</summary><div class="body">
+<canvas id="wheel" width="340" height="340"></canvas>
+<div class="res" id="wres"></div>
+<div class="row" style="justify-content:center"><button id="spin">Spin ♥</button></div>
+<div class="row"><input type="text" id="newd" placeholder="Add a date idea…"><button id="addd">Add</button></div>
+</div></details>
+
+<details><summary>✈️ Trips</summary><div class="body"><div id="v_Trip"></div></div></details>
+
+<details><summary>📚 Reading Together</summary><div class="body">
+<div id="v_Book"></div>
+<p><small>Current book, where we’re up to, favourite lines:</small></p>
+<input type="text" data-save="book" placeholder="Our current book…">
+<div class="row"></div>
+<textarea data-save="booknotes" placeholder="Where we’re up to, favourite moments, discussion questions…"></textarea>
+</div></details>
+
+<details><summary>🌅 Daily Discovery</summary><div class="body">
+<div class="q" id="dq"></div>
+<div class="row" style="justify-content:center"><button id="dprev">Back</button><button id="dnext">Next question ♥</button></div>
+<textarea data-save="dnotes" placeholder="Her answer, my answer, what to ask next…"></textarea>
+</div></details>
+
+<details><summary>📓 Conversation Journal <small>(private to this device)</small></summary><div class="body">
+<textarea data-save="journal" style="min-height:160px" placeholder="Date · topic · what she shared · what I shared · worth a deeper chat later…"></textarea>
+</div></details>
+
+<details><summary>🧭 Topic Tracker</summary><div class="body"><div class="scroll"><table id="tt"></table></div></div></details>
+
+<details><summary>✨ Our Moments</summary><div class="body">
+<textarea data-save="moments" placeholder="First message, first call, first meet-up, inside jokes…"></textarea>
+</div></details>
+
+<details><summary>🔄 Weekly Check-in</summary><div class="body">
+<ul>
+<li>Best moment this week?</li><li>One thing I appreciated about you</li>
+<li>Are we comfortable? Is there space to exhale?</li>
+<li>Anything either of us wants more or less of?</li>
+<li>What are we doing next? Spin the wheel 🎡</li></ul>
+<textarea data-save="weekly" placeholder="Notes…"></textarea>
+</div></details>
+</main>
+
+<script>
+function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+// floating hearts
+var H=document.getElementById('hearts');
+for(var i=0;i<22;i++){var s=document.createElement('span');s.textContent='♥';
+s.style.left=Math.random()*100+'%';s.style.fontSize=(14+Math.random()*34)+'px';
+s.style.animationDuration=(10+Math.random()*14)+'s';s.style.animationDelay=(-Math.random()*20)+'s';H.appendChild(s)}
+
+// one list for everything: incoming / done sync
+var TYPES=["Date","Adventure","Trip","Book","To-do","Milestone"];
+var DEF=[["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Pick our first book to read together","Book",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]];
+var ol=ld('ol2',null)||DEF;
+function fill(el,fn){el.innerHTML='';var n=0;
+ol.forEach(function(it,i){if(!fn(it))return;n++;var l=document.createElement('label');l.className='item'+(it[2]?' done':'');
+var cb=document.createElement('input');cb.type='checkbox';cb.checked=!!it[2];
+cb.onchange=function(){ol[i][2]=cb.checked?1:0;sv('ol2',ol);renderAll()};
+var sp=document.createElement('span');sp.textContent=it[0];var ch=document.createElement('span');ch.className='chip';ch.textContent=it[1];ch.style.marginLeft='auto';ch.style.textDecoration='none';
+l.appendChild(cb);l.appendChild(sp);l.appendChild(ch);el.appendChild(l)});
+if(!n){el.innerHTML='<p><small>Nothing here yet ♥</small></p>'}return n}
+var views=["Adventure","Trip","Book"];
+views.forEach(function(t){var h=document.getElementById('v_'+t);
+h.innerHTML='<div class="lst"></div><div class="row"><input type="text" placeholder="Add to this list…"><button>Add</button></div>';
+h.querySelector('button').onclick=function(){var inp=h.querySelector('input');if(inp.value.trim()){ol.push([inp.value.trim(),t,0]);sv('ol2',ol);inp.value='';renderAll()}}});
+var sel=document.getElementById('newt');TYPES.forEach(function(t){var o=document.createElement('option');o.textContent=t;sel.appendChild(o)});
+document.getElementById('addi').onclick=function(){var v=document.getElementById('newi');if(v.value.trim()){ol.push([v.value.trim(),sel.value,0]);sv('ol2',ol);v.value='';renderAll()}};
+function renderAll(){
+var ni=fill(document.getElementById('inc'),function(x){return !x[2]});
+var nd=fill(document.getElementById('done'),function(x){return x[2]});
+document.getElementById('ninc').textContent=ni;document.getElementById('ndone').textContent=nd;
+document.getElementById('pbar').style.width=(100*nd/ol.length)+'%';
+views.forEach(function(t){fill(document.getElementById('v_'+t).querySelector('.lst'),function(x){return x[1]===t})})}
+renderAll();
+
+// spinner
+var ideas=ld('ideas',null)||["Walk + ice cream","Coffee + board game","30-minute lunch","Cook together","Read side by side","Storytime","Karaoke","Bowling","Go-karting","Escape room","Aquarium","Hike with a view","Cycle + picnic","Sunset + playlists","Trivia night","Mystery date"];
+var cv=document.getElementById('wheel'),cx=cv.getContext('2d'),ang=0,spinning=false;
+var cols=['#e63b6f','#ff8fab','#c9184a','#ffb3c6'];
+function wheel(){var n=ideas.length,r=170,a=2*Math.PI/n;cx.clearRect(0,0,340,340);
+for(var i=0;i<n;i++){cx.beginPath();cx.moveTo(170,170);cx.arc(170,170,r-4,ang+i*a,ang+(i+1)*a);cx.fillStyle=cols[i%4];cx.fill();
+cx.save();cx.translate(170,170);cx.rotate(ang+i*a+a/2);cx.fillStyle='#fff';cx.font='12px Georgia';cx.textAlign='right';
+cx.fillText(ideas[i].length>22?ideas[i].slice(0,21)+'…':ideas[i],r-14,4);cx.restore()}
+cx.beginPath();cx.arc(170,170,20,0,7);cx.fillStyle='#fff';cx.fill();
+cx.fillStyle='#e63b6f';cx.font='20px serif';cx.textAlign='center';cx.fillText('♥',170,177);
+cx.beginPath();cx.moveTo(332,170);cx.lineTo(348,160);cx.lineTo(348,180);cx.fillStyle='#4a1d2c';cx.fill();}
+document.getElementById('spin').onclick=function(){if(spinning)return;spinning=true;
+var tot=ang+Math.PI*2*(5+Math.random()*3),st=ang,t0=null,dur=4200;
+(function f(t){if(!t0)t0=t;var p=Math.min((t-t0)/dur,1),e=1-Math.pow(1-p,3);ang=st+(tot-st)*e;wheel();
+if(p<1)requestAnimationFrame(f);else{spinning=false;var n=ideas.length,a=2*Math.PI/n;
+var pos=((-ang)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);var idx=Math.floor(pos/a)%n;
+document.getElementById('wres').textContent='💘 '+ideas[idx]}})(performance.now())};
+document.getElementById('addd').onclick=function(){var v=document.getElementById('newd');if(v.value.trim()){ideas.push(v.value.trim());sv('ideas',ideas);v.value='';wheel()}};
+wheel();
+
+// daily discovery
+var qs=["What’s something you wish people would take the time to discover about you, instead of assuming from first impressions?","What’s a childhood experience that shaped who you’ve become?","What does being genuinely loved look like in your everyday life?","What’s an opinion you hold that not everyone agrees with?","What’s something you’ve always wanted to try but haven’t had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"];
+var qi=ld('qi',0);function showQ(){document.getElementById('dq').textContent='Day '+(qi+1)+': '+qs[qi];sv('qi',qi)}
+document.getElementById('dnext').onclick=function(){qi=(qi+1)%qs.length;showQ()};
+document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;showQ()};showQ();
+
+// topic tracker
+var tt=[["Family structure","In progress","Childhood memories"],["Religion and beliefs","In progress","How beliefs show up daily"],["Past relationships","In progress","Lessons and growth"],["Future ambitions","In progress","What success means to her"],["Reading","In progress","Favourite books and genres"],["Romance and affection","In progress","Little gestures that matter"],["Conflict and repair","In progress","How we repair after disagreements"],["Travel and adventure","In progress","Dream destinations"],["Humour and playfulness","In progress","This-or-that rounds"]];
+document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
+
+// saved text fields
+document.querySelectorAll('[data-save]').forEach(function(el){var k='f_'+el.dataset.save;el.value=ld(k,'');el.oninput=function(){sv(k,el.value)}});
+</script>
+</body>
+</html>
