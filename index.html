@@ -376,7 +376,7 @@ function applySnapshot(data){
   if(data['f_questions']){qs=data['f_questions'];showQ()}
   document.querySelectorAll('[data-save]').forEach(function(el){
     var k='f_'+el.dataset.save;
-    if(typeof data[k]!=='undefined' && el.value!==data[k]){el.value=data[k];sv(k,data[k])}
+    if(typeof data[k]!=='undefined' && el.value!==data[k] && el!==document.activeElement){el.value=data[k];sv(k,data[k])}
   });
 }
 onDataChanged(function(data){
