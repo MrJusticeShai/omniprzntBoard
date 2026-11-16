@@ -377,9 +377,12 @@ s.style.left=Math.random()*100+'%';s.style.fontSize=(14+Math.random()*34)+'px';
 s.style.animationDuration=(10+Math.random()*14)+'s';s.style.animationDelay=(-Math.random()*20)+'s';H.appendChild(s)}
 
 // one list for everything: incoming / done sync
-var TYPES=["Date","Adventure","Trip","Book","To-do","Milestone"];
-var DEF=[["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Pick our first book to read together","Book",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]];
+var TYPES=["Date","Adventure","Trip","To-do","Milestone"];
+var DEF=[["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]];
 var ol=ld('ol2',null)||DEF;
+// Strip any legacy Book-type entries (moved to Reading Together section)
+ol=ol.filter(function(it){ return it[1]!=='Book'; });
+saveData('ol2',ol);
 function fill(el,fn){el.innerHTML='';var n=0;
 ol.forEach(function(it,i){if(!fn(it))return;n++;var l=document.createElement('label');l.className='item'+(it[2]?' done':'');
 var cb=document.createElement('input');cb.type='checkbox';cb.checked=!!it[2];
