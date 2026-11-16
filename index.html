@@ -171,7 +171,7 @@ small{color:var(--mute)}
 
 <details><summary>🧭 Topic Tracker</summary><div class="body"><div class="scroll"><table id="tt"></table></div></div></details>
 
-<details><summary>✨ Our Moments</summary><div class="body">
+<details open><summary>✨ Our Moments</summary><div class="body">
 <div class="entry-form" id="mom-form">
   <input type="text" id="mom-title" placeholder="Title — e.g. First call, Inside joke…">
   <input type="date" id="mom-date">
@@ -262,6 +262,7 @@ function setSync(state,label){
 var writing = false; // prevent snapshot write-loops
 var pendingWrites = 0; // count of in-flight Firestore writes
 var queuedSnapshot = null; // last snapshot received while writes were in flight
+var lastWriteAt = 0; // timestamp of last completed write, poll skips for 4s after
 
 // Save a single key-value to the state document in Firestore + localStorage
 function saveData(key, value) {
@@ -280,6 +281,7 @@ function saveData(key, value) {
     db.collection('usapp').doc('state').set(patch, {merge:true})
       .then(function(){
         pendingWrites--;
+        lastWriteAt = Date.now();
         if (pendingWrites === 0 && queuedSnapshot) {
           // Apply the snapshot that arrived while we were writing
           var data = queuedSnapshot; queuedSnapshot = null;
@@ -422,12 +424,16 @@ function addMoment(){
   var date  = document.getElementById('mom-date').value;
   var body  = document.getElementById('mom-body').value.trim();
   if(!title && !body){ alert('Add a title or some text first ♥'); return; }
-  moments.unshift({title:title, date:date, body:body});
+  var entry = {title:title, date:date, body:body};
+  console.log('[moment] adding', entry);
+  moments.unshift(entry);
+  console.log('[moment] moments array now', moments.length, 'items');
   saveData('f_moments', moments);
   document.getElementById('mom-title').value='';
   document.getElementById('mom-date').valueAsDate=new Date();
   document.getElementById('mom-body').value='';
   renderMoments();
+  console.log('[moment] renderMoments called, mom-cards innerHTML length:', (document.getElementById('mom-cards')||{innerHTML:''}).innerHTML.length);
   var btn=document.querySelector('[onclick="addMoment()"]');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
@@ -543,6 +549,7 @@ onDataChanged(function(data){
 if(db){
   setInterval(function(){
     if(pendingWrites > 0) return;
+    if(Date.now() - lastWriteAt < 4000) return; // skip poll briefly after a local write
     db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
       if(doc.exists){ applySnapshot(doc.data()); setSync('on','poll ✓ '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})); }
     }).catch(function(e){ setSync('off','poll err: '+e.code); });
