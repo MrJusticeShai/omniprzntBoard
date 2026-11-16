@@ -214,11 +214,12 @@ if (fbReady) {
     db = firebase.firestore();
     db.enablePersistence({synchronizeTabs:true}).catch(function(){});
     setSync('on','synced');
-  } else {
+  } catch(e) {
+    console.warn('Firebase init failed:', e);
     setSync('off','local only');
   }
 } else {
-    setSync('off','local only');
+  setSync('off','local only');
 }
 
 function setSync(state,label){
