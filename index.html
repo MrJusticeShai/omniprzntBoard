@@ -371,7 +371,6 @@ document.querySelectorAll('[data-save]').forEach(function(el){
 
 // ===== Firestore real-time sync =====
 function applySnapshot(data){
-  console.log('[sync] applying snapshot, ol2 items:', data['ol2'] ? data['ol2'].length : 'none');
   if(data['ol2']){ol=data['ol2'];renderAll()}
   if(data['ideas']){ideas=data['ideas'];wheel()}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
@@ -383,10 +382,19 @@ function applySnapshot(data){
   });
 }
 onDataChanged(function(data){
-  console.log('[sync] snapshot received, pendingWrites:', pendingWrites);
   if(pendingWrites > 0){ queuedSnapshot = data; return; }
   applySnapshot(data);
 });
+
+// Polling fallback — catches updates the real-time listener misses (e.g. backgrounded tab, mobile)
+if(db){
+  setInterval(function(){
+    if(pendingWrites > 0) return; // don't overwrite mid-write
+    db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
+      if(doc.exists) applySnapshot(doc.data());
+    }).catch(function(){});
+  }, 5000);
+}
 
 // ===== PHOTO GALLERY (Cloudinary + Firestore) =====
 var GCH=[["first-date","First date"],["adventures","Adventures"],["trips","Trips"],["everyday","Everyday"]];
