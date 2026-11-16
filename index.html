@@ -257,14 +257,11 @@ function saveData(key, value) {
 // Listen for real-time updates from Firestore; auto-seed defaults on first run
 function onDataChanged(callback) {
   if (!db) return;
-  fbUnsub.state = db.collection('usapp').doc('state').onSnapshot({includeMetadataChanges:true}, function(doc){
+  fbUnsub.state = db.collection('usapp').doc('state').onSnapshot(function(doc){
     if (!doc.exists) {
       seedDefaults();
       return;
     }
-    // Skip snapshots that are only from local cache (not yet confirmed by server)
-    // Exception: if we have pending local writes, we already handle those via queuedSnapshot
-    if (doc.metadata.fromCache && pendingWrites === 0) return;
     writing = true;
     callback(doc.data());
     writing = false;
