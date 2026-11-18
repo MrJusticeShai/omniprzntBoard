@@ -152,7 +152,7 @@ small{color:var(--mute)}
 <details open><summary>⏳ Incoming <span class="chip" id="ninc"></span></summary><div class="body">
 <small>Tick something and it flies over to Done. Untick it in Done to bring it back.</small>
 <div id="inc"></div>
-<div class="row"><input type="text" id="newi" placeholder="Add something we want to do…"><select id="newt"></select><button id="addi">Add</button></div>
+<div class="row"><input type="text" id="newi" autocomplete="off" placeholder="Add something we want to do…"><select id="newt"></select><button id="addi">Add</button></div>
 </div></details>
 
 <details><summary>✅ Done <span class="chip" id="ndone"></span></summary><div class="body">
@@ -378,10 +378,10 @@ s.style.animationDuration=(10+Math.random()*14)+'s';s.style.animationDelay=(-Mat
 
 // one list for everything: incoming / done sync
 var TYPES=["Date","Adventure","Trip","To-do","Milestone"];
-var DEF=[["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]];
+var DEF=[["First date","Milestone",1],["Phone call","Milestone",1],["Start the Date Spinner","To-do",0],["30-minute lunch","Date",0],["First walk / hike / cycle","Date",0],["Go on a hike","Adventure",0],["Go cycling together","Adventure",0],["Bowling","Adventure",0],["Bouncing / trampoline park","Adventure",0],["Go-karting","Adventure",0],["Quad biking","Adventure",0],["Aquarium","Adventure",0],["Escape room","Adventure",0],["Karaoke night","Adventure",0],["Picnic with books","Adventure",0],["Cook a meal together","Adventure",0],["Sunset somewhere beautiful","Adventure",0],["Truth","Adventure",0],["Open Air — Spider-Man","Adventure",0],["Open Air — Romeo + Juliet","Adventure",0],["Open Air — The Great Gatsby","Adventure",0],["Spa day","Adventure",0],["Jazz at Kloof House","Adventure",0],["Ocean Basket","Date",0],["Our first trip together","Trip",0],["Nature day trip","Trip",0],["Surprise weekend","Trip",0]];
 var ol=ld('ol2',null)||DEF;
-// Strip any legacy Book-type entries (moved to Reading Together section)
-ol=ol.filter(function(it){ return it[1]!=='Book'; });
+// Strip legacy Book-type entries and any garbage 'on' entries
+ol=ol.filter(function(it){ return it[1]!=='Book' && it[0]!=='on' && it[0].trim()!==''; });
 saveData('ol2',ol);
 function fill(el,fn){el.innerHTML='';var n=0;
 ol.forEach(function(it,i){if(!fn(it))return;n++;var l=document.createElement('label');l.className='item'+(it[2]?' done':'');
@@ -392,10 +392,10 @@ l.appendChild(cb);l.appendChild(sp);l.appendChild(ch);el.appendChild(l)});
 if(!n){el.innerHTML='<p><small>Nothing here yet ♥</small></p>'}return n}
 var views=["Adventure","Trip"];
 views.forEach(function(t){var h=document.getElementById('v_'+t);
-h.innerHTML='<div class="lst"></div><div class="row"><input type="text" placeholder="Add to this list…"><button>Add</button></div>';
-h.querySelector('button').onclick=function(){var inp=h.querySelector('input');if(inp.value.trim()){ol.push([inp.value.trim(),t,0]);saveData('ol2',ol);inp.value='';renderAll()}}});
+h.innerHTML='<div class="lst"></div><div class="row"><input type="text" autocomplete="off" placeholder="Add to this list…"><button>Add</button></div>';
+h.querySelector('button').onclick=function(){var inp=h.querySelector('input');var v=inp.value.trim();if(v && v!=='on'){ol.push([v,t,0]);saveData('ol2',ol);inp.value='';renderAll()}}});
 var sel=document.getElementById('newt');TYPES.forEach(function(t){var o=document.createElement('option');o.textContent=t;sel.appendChild(o)});
-document.getElementById('addi').onclick=function(){var v=document.getElementById('newi');if(v.value.trim()){ol.push([v.value.trim(),sel.value,0]);saveData('ol2',ol);v.value='';renderAll()}};
+document.getElementById('addi').onclick=function(){var v=document.getElementById('newi');var val=v.value.trim();if(val && val!=='on'){ol.push([val,sel.value,0]);saveData('ol2',ol);v.value='';renderAll()}};
 function renderAll(){
 var ni=fill(document.getElementById('inc'),function(x){return !x[2]});
 var nd=fill(document.getElementById('done'),function(x){return x[2]});
