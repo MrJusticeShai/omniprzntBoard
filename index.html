@@ -382,6 +382,9 @@ var DEF=[["First date","Milestone",1],["Phone call","Milestone",1],["Start the D
 var ol=ld('ol2',null)||DEF;
 // Strip legacy Book-type entries and any garbage 'on' entries
 ol=ol.filter(function(it){ return it[1]!=='Book' && it[0]!=='on' && it[0].trim()!==''; });
+// Merge any new DEF items not already in ol (by name)
+var olNames=ol.map(function(it){return it[0].toLowerCase();});
+DEF.forEach(function(it){if(olNames.indexOf(it[0].toLowerCase())===-1){ol.push(it);}});
 saveData('ol2',ol);
 function fill(el,fn){el.innerHTML='';var n=0;
 ol.forEach(function(it,i){if(!fn(it))return;n++;var l=document.createElement('label');l.className='item'+(it[2]?' done':'');
