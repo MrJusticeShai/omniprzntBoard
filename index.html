@@ -411,7 +411,7 @@ function onDataChanged(callback) {
   }, function(e){
     setSync('off', 'error: ' + e.code);
     db = null;
-    renderAll(); wheel(); showQ();
+    renderAll(); wheel(); showQ(true);
   });
 }
 
@@ -576,13 +576,15 @@ var qi=ld('qi',0);
 var dnotesArr = ld('f_dnotes', []);
 if(!Array.isArray(dnotesArr)) dnotesArr = [];
 
-function showQ(){
+function showQ(clearInput){
   document.getElementById('dq').textContent = 'Question '+(qi+1)+': '+qs[qi];
   sv('qi', qi);
-  // Clear the textarea when navigating — it's a scratchpad, not an editor.
-  // The saved note is visible in the card below.
-  var dnotesEl = document.getElementById('dnotes-input');
-  if(dnotesEl) dnotesEl.value = '';
+  // Only clear the textarea when the user deliberately navigated (clearInput=true)
+  // Never clear it during a Firestore sync poll
+  if(clearInput){
+    var dnotesEl = document.getElementById('dnotes-input');
+    if(dnotesEl) dnotesEl.value = '';
+  }
   renderDiscoveryCards();
 }
 
@@ -630,7 +632,7 @@ document.getElementById('dnotes-cards').addEventListener('click', function(e){
     var idx = parseInt(goBtn.dataset.dgo, 10);
     qi = idx;
     saveData('qi', qi);
-    showQ();
+    showQ(true);
   }
 });
 
@@ -639,8 +641,8 @@ document.getElementById('btn-clear-dnotes').onclick = function(){
   document.getElementById('dnotes-input').value = '';
 };
 
-document.getElementById('dnext').onclick=function(){qi=(qi+1)%qs.length;saveData('qi',qi);showQ()};
-document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;saveData('qi',qi);showQ()};
+document.getElementById('dnext').onclick=function(){qi=(qi+1)%qs.length;saveData('qi',qi);showQ(true)};
+document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;saveData('qi',qi);showQ(true)};
 showQ();
 
 // topic tracker
@@ -1015,12 +1017,12 @@ function applySnapshot(data){
     renderAll();
   }
   if(data['ideas']){ideas=data['ideas'];wheel();renderIdeas();}
-  if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
+  if(typeof data['qi']!=='undefined' && data['qi'] !== qi){qi=data['qi'];showQ()}
   if(data['f_topics']){
     tt=data['f_topics'].map(function(r){ return Array.isArray(r)?r:[r.a||'',r.b||'',r.c||'']; });
     document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
   }
-  if(data['f_questions']){qs=data['f_questions'];showQ()}
+  if(data['f_questions']){qs=data['f_questions'];if(typeof data['qi']==='undefined'||data['qi']===qi)showQ()}
   // Moments — apply any change from Firestore (including deletions)
   if(data['f_moments'] && Array.isArray(data['f_moments'])){
     var incoming=JSON.stringify(data['f_moments']);
