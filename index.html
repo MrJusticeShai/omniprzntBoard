@@ -213,7 +213,11 @@ small{color:var(--mute)}
 <div class="q" id="dq"></div>
 <div class="row" style="justify-content:center"><button id="dprev">Back</button><button id="dnext">Next question ♥</button></div>
 <textarea id="dnotes-input" placeholder="Her answer, my answer, what to ask next…"></textarea>
-<div class="save-row"><button id="btn-save-dnotes" onclick="saveDnotes()">Save notes ♥</button></div>
+<div class="save-row" style="gap:8px">
+  <button id="btn-clear-dnotes" style="background:none;color:var(--mute);border:1px solid var(--soft);border-radius:999px;padding:9px 16px;font:inherit;cursor:pointer">Clear</button>
+  <button id="btn-save-dnotes" onclick="saveDnotes()">Save notes ♥</button>
+</div>
+<div id="dnotes-cards" style="margin-top:16px"></div>
 </div></details>
 
 <details><summary>📓 Conversation Journal</summary><div class="body">
@@ -419,7 +423,7 @@ function seedDefaults() {
     qi: 0,
     f_book: "",
     f_booknotes: "",
-    f_dnotes: "",
+    f_dnotes: [],
     f_journal: [],
     f_moments: [],
     f_books: [],
@@ -550,9 +554,91 @@ wheel();
 
 // daily discovery
 var qs=["What's something you wish people would take the time to discover about you, instead of assuming from first impressions?","What's a childhood experience that shaped who you've become?","What does being genuinely loved look like in your everyday life?","What's an opinion you hold that not everyone agrees with?","What's something you've always wanted to try but haven't had the chance to?","What makes you feel emotionally safe with another person?","If we spent a whole day together with no itinerary, what would you hope happens?","If you had a Saturday with zero obligations, how would you spend it?","What would a genuinely fulfilling life look like to you at 40?","Would you rather someone make you laugh uncontrollably or read your mind?"];
-var qi=ld('qi',0);function showQ(){document.getElementById('dq').textContent='Day '+(qi+1)+': '+qs[qi];sv('qi',qi)}
+var qi=ld('qi',0);
+
+// f_dnotes is now an array: index = question index, value = note string (or '')
+// Migrate legacy single-string value if present
+(function(){
+  var raw = localStorage.getItem('f_dnotes');
+  if(raw){
+    try {
+      var parsed = JSON.parse(raw);
+      // If it's already an array, leave it; if it's a string, migrate to index 0
+      if(!Array.isArray(parsed)){
+        var arr = [];
+        arr[0] = parsed;
+        sv('f_dnotes', arr);
+      }
+    } catch(e){ sv('f_dnotes', []); }
+  }
+})();
+var dnotesArr = ld('f_dnotes', []);
+if(!Array.isArray(dnotesArr)) dnotesArr = [];
+
+function showQ(){
+  document.getElementById('dq').textContent = 'Question '+(qi+1)+': '+qs[qi];
+  sv('qi', qi);
+  // Load this question's saved note into the textarea
+  var dnotesEl = document.getElementById('dnotes-input');
+  if(dnotesEl) dnotesEl.value = dnotesArr[qi] || '';
+  renderDiscoveryCards();
+}
+
+function renderDiscoveryCards(){
+  var c = document.getElementById('dnotes-cards'); if(!c) return;
+  c.innerHTML = '';
+  var hasAny = false;
+  qs.forEach(function(q, i){
+    if(!dnotesArr[i] || !dnotesArr[i].trim()) return;
+    hasAny = true;
+    var card = document.createElement('div');
+    card.className = 'ecard';
+    card.style.marginBottom = '10px';
+    var isActive = (i === qi);
+    card.innerHTML =
+      '<div class="edate" style="display:flex;justify-content:space-between;align-items:center">'
+      +  '<span>Q'+(i+1)+(isActive ? ' <span style="background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px;font-size:.72rem">current</span>' : '')+'</span>'
+      + '</div>'
+      + '<div class="etitle" style="font-size:.85rem;font-weight:normal;color:var(--mute);margin-bottom:4px">'+esc(q)+'</div>'
+      + '<div class="ebody">'+esc(dnotesArr[i])+'</div>'
+      + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
+      +   '<button class="edel" data-dni="'+i+'">Remove</button>'
+      +   '<button class="edel" data-dgo="'+i+'" style="color:var(--accent);border-color:var(--accent)">Go to Q'+(i+1)+'</button>'
+      + '</div>';
+    c.appendChild(card);
+  });
+  if(!hasAny){
+    c.innerHTML = '<p style="color:var(--mute);font-size:.88rem;text-align:center;padding:10px 0">Save a note above and it\'ll appear here, tied to its question ♥</p>';
+  }
+}
+
+// Event delegation for discovery cards
+document.getElementById('dnotes-cards').addEventListener('click', function(e){
+  var delBtn = e.target.closest('[data-dni]');
+  var goBtn  = e.target.closest('[data-dgo]');
+  if(delBtn){
+    var idx = parseInt(delBtn.dataset.dni, 10);
+    dnotesArr[idx] = '';
+    saveData('f_dnotes', dnotesArr);
+    if(idx === qi) document.getElementById('dnotes-input').value = '';
+    renderDiscoveryCards();
+  }
+  if(goBtn){
+    var idx = parseInt(goBtn.dataset.dgo, 10);
+    qi = idx;
+    saveData('qi', qi);
+    showQ();
+  }
+});
+
+// Clear button — clears just the current question's textarea without saving
+document.getElementById('btn-clear-dnotes').onclick = function(){
+  document.getElementById('dnotes-input').value = '';
+};
+
 document.getElementById('dnext').onclick=function(){qi=(qi+1)%qs.length;saveData('qi',qi);showQ()};
-document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;saveData('qi',qi);showQ()};showQ();
+document.getElementById('dprev').onclick=function(){qi=(qi+qs.length-1)%qs.length;saveData('qi',qi);showQ()};
+showQ();
 
 // topic tracker
 var tt=[["Family structure","In progress","Childhood memories"],["Religion and beliefs","In progress","How beliefs show up daily"],["Past relationships","In progress","Lessons and growth"],["Future ambitions","In progress","What success means to her"],["Reading","In progress","Favourite books and genres"],["Romance and affection","In progress","Little gestures that matter"],["Conflict and repair","In progress","How we repair after disagreements"],["Travel and adventure","In progress","Dream destinations"],["Humour and playfulness","In progress","This-or-that rounds"]];
@@ -892,13 +978,14 @@ function deleteJournal(i){
 (function(){ var d=document.getElementById('mom-date'); if(d) d.valueAsDate=new Date(); })();
 renderJournal();
 
-// ===== Daily Discovery notes (manual save) =====
+// ===== Daily Discovery notes (per-question array) =====
 var dnotesEl = document.getElementById('dnotes-input');
-if(dnotesEl){ dnotesEl.value = ld('f_dnotes',''); }
 function saveDnotes(){
-  var v = dnotesEl ? dnotesEl.value : '';
-  sv('f_dnotes', v);
-  saveData('f_dnotes', v);
+  var v = dnotesEl ? dnotesEl.value.trim() : '';
+  if(!v){ alert('Write something first ♥'); return; }
+  dnotesArr[qi] = v;
+  saveData('f_dnotes', dnotesArr);
+  renderDiscoveryCards();
   var btn=document.getElementById('btn-save-dnotes');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
@@ -950,9 +1037,19 @@ function applySnapshot(data){
     var incomingF=JSON.stringify(data['gfavs']);
     if(incomingF!==JSON.stringify(gfavs)){gfavs=data['gfavs'];sv('gfavs',gfavs);}
   }
-  // Plain text fields
-  if(typeof data['f_dnotes']!=='undefined' && dnotesEl && dnotesEl!==document.activeElement){
-    dnotesEl.value=data['f_dnotes']; sv('f_dnotes',data['f_dnotes']);
+  // Daily Discovery notes — now an array keyed by question index
+  if(typeof data['f_dnotes']!=='undefined'){
+    var incoming = data['f_dnotes'];
+    // Handle both legacy string (index 0 only) and array
+    if(typeof incoming === 'string') incoming = [incoming];
+    if(Array.isArray(incoming)){
+      dnotesArr = incoming;
+      sv('f_dnotes', dnotesArr);
+      if(dnotesEl && dnotesEl !== document.activeElement){
+        dnotesEl.value = dnotesArr[qi] || '';
+      }
+      renderDiscoveryCards();
+    }
   }
   if(typeof data['f_weekly']!=='undefined' && weeklyEl && weeklyEl!==document.activeElement){
     weeklyEl.value=data['f_weekly']; sv('f_weekly',data['f_weekly']);
