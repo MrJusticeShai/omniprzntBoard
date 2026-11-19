@@ -166,7 +166,8 @@ small{color:var(--mute)}
 <canvas id="wheel" width="440" height="440"></canvas>
 <div class="res" id="wres"></div>
 <div class="row" style="justify-content:center"><button id="spin">Spin ♥</button></div>
-<div class="row"><input type="text" id="newd" placeholder="Add a date idea…"><button id="addd">Add</button></div>
+<div class="row"><input type="text" id="newd" autocomplete="off" placeholder="Add a date idea…"><button id="addd">Add</button></div>
+<div id="ideas-list" style="margin-top:10px"></div>
 </div></details>
 
 <details><summary>✈️ Trips</summary><div class="body"><div id="v_Trip"></div></div></details>
@@ -453,10 +454,27 @@ var newdVal='', newd=document.getElementById('newd');
 newd.addEventListener('input',function(){newdVal=newd.value;});
 newd.addEventListener('change',function(){newdVal=newd.value;});
 document.getElementById('addd').onclick=function(){
-  var v=(newdVal||newd.value).trim();
-  if(!v||v==='on') return;
-  ideas.push(v);saveData('ideas',ideas);newd.value='';newdVal='';wheel();
+  try {
+    var v=(newdVal||newd.value).trim();
+    if(!v||v==='on'){alert('Type an idea first ♥');return;}
+    ideas.push(v);saveData('ideas',ideas);newd.value='';newdVal='';wheel();renderIdeas();
+  } catch(e){alert('Add error: '+e.message);}
 };
+function renderIdeas(){
+  var el=document.getElementById('ideas-list'); if(!el) return;
+  el.innerHTML='';
+  ideas.forEach(function(idea,i){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px dashed var(--soft)';
+    var txt=document.createElement('span');txt.textContent=idea;txt.style.flex='1';txt.style.fontSize='.9rem';
+    var x=document.createElement('button');
+    x.textContent='✕';
+    x.style.cssText='background:none;color:#aaa;border:1px solid #ddd;border-radius:50%;width:22px;height:22px;padding:0;font-size:.75rem;line-height:1;flex-shrink:0';
+    x.onclick=function(e){e.stopPropagation();ideas.splice(i,1);saveData('ideas',ideas);wheel();renderIdeas();};
+    row.appendChild(txt);row.appendChild(x);el.appendChild(row);
+  });
+}
+renderIdeas();
 wheel();
 
 // daily discovery
@@ -567,6 +585,7 @@ function openMov(i, obj){
 }
 function closeMov(){ document.getElementById('mov').classList.remove('show'); }
 function addMoment(){
+  try {
   var title = document.getElementById('mom-title').value.trim();
   var date  = document.getElementById('mom-date').value;
   var body  = document.getElementById('mom-body').value.trim();
@@ -580,6 +599,7 @@ function addMoment(){
   renderMoments();
   var btn=document.querySelector('[onclick="addMoment()"]');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
+  } catch(e){alert('Moment error: '+e.message);}
 }
 function deleteMoment(i){
   moments.splice(i,1);
@@ -674,6 +694,7 @@ function renderBooks(){
 }
 
 function addBook(){
+  try {
   var title = document.getElementById('book-title').value.trim();
   var author = document.getElementById('book-author').value.trim();
   var notes  = document.getElementById('book-notes').value.trim();
@@ -689,6 +710,7 @@ function addBook(){
   renderBooks();
   var btn=document.querySelector('[onclick="addBook()"]');
   if(btn){var orig=btn.textContent;btn.textContent='Added ♥';setTimeout(function(){btn.textContent=orig;},1500);}
+  } catch(e){alert('Book error: '+e.message);}
 }
 renderBooks();
 
@@ -708,6 +730,7 @@ function renderJournal(){
   });
 }
 function addJournal(){
+  try {
   var date  = document.getElementById('jour-date').value;
   var title = document.getElementById('jour-title').value.trim();
   var body  = document.getElementById('jour-body').value.trim();
@@ -720,6 +743,7 @@ function addJournal(){
   renderJournal();
   var btn=document.querySelector('[onclick="addJournal()"]');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
+  } catch(e){alert('Journal error: '+e.message);}
 }
 function deleteJournal(i){
   journalEntries.splice(i,1);
@@ -762,7 +786,7 @@ function applySnapshot(data){
     });
     renderAll();
   }
-  if(data['ideas']){ideas=data['ideas'];wheel()}
+  if(data['ideas']){ideas=data['ideas'];wheel();renderIdeas();}
   if(typeof data['qi']!=='undefined'){qi=data['qi'];showQ()}
   if(data['f_topics']){
     tt=data['f_topics'].map(function(r){ return Array.isArray(r)?r:[r.a||'',r.b||'',r.c||'']; });
