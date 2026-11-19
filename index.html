@@ -291,18 +291,19 @@ small{color:var(--mute)}
 <!-- Music player -->
 <div id="music-bar">
   <button id="music-toggle" title="Play / Pause">▶</button>
-  <span id="music-title">Our song ♪</span>
+  <span id="music-title">Planned — Nasty C ♪</span>
   <button id="music-change">change</button>
 </div>
-<audio id="music-audio" loop preload="none"></audio>
+<!-- Hidden YouTube player container -->
+<div id="yt-holder" style="position:fixed;width:1px;height:1px;bottom:0;left:0;overflow:hidden;opacity:0;pointer-events:none"></div>
 
 <!-- Change song modal -->
 <div id="music-modal">
   <div class="mm-box">
     <h3>🎵 Change our song</h3>
-    <small>Paste a direct link to an MP3, OGG, or any audio file URL.<br>
-    Free options: upload to Cloudinary, Google Drive (direct link), or Dropbox (?dl=1).</small>
-    <input id="music-url" type="url" placeholder="https://…/song.mp3">
+    <small>Paste a YouTube link <em>or</em> a direct MP3/audio URL.<br>
+    e.g. https://youtu.be/abc123 · https://youtu.be/watch?v=abc123</small>
+    <input id="music-url" type="url" placeholder="https://youtu.be/… or https://…/song.mp3">
     <div class="mm-row">
       <button id="music-cancel" style="background:none;color:var(--mute);border:1px solid var(--soft);border-radius:999px;padding:8px 16px;font:inherit;cursor:pointer">Cancel</button>
       <button id="music-save">Save ♥</button>
@@ -1177,67 +1178,159 @@ window.addEventListener('resize',function(){
 
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 
-// ===== Music player =====
+// ===== Music player (YouTube IFrame API) =====
 (function(){
-  var audio  = $('music-audio');
-  var toggle = $('music-toggle');
-  var titleEl= $('music-title');
+  var toggle    = $('music-toggle');
+  var titleEl   = $('music-title');
   var changeBtn = $('music-change');
-  var modal  = $('music-modal');
-  var urlInp = $('music-url');
-  var saveBtn= $('music-save');
-  var cancelBtn=$('music-cancel');
+  var modal     = $('music-modal');
+  var urlInp    = $('music-url');
+  var saveBtn   = $('music-save');
+  var cancelBtn = $('music-cancel');
 
-  // Default song — a royalty-free lo-fi track via ccMixter / public domain
-  var DEFAULT_SONG = '';
-  var DEFAULT_LABEL = 'Our song ♪';
+  // "Planned" — Nasty C & Tellaman  (official YouTube video ID)
+  var DEFAULT_YT_ID    = 'YYsRpAkMBHk';
+  var DEFAULT_LABEL    = 'Planned — Nasty C ♪';
 
-  var songUrl   = ld('music_url',   DEFAULT_SONG);
+  var ytId    = ld('music_ytid',  DEFAULT_YT_ID);
+  var songUrl = ld('music_url',   '');       // fallback direct audio URL
   var songLabel = ld('music_label', DEFAULT_LABEL);
-  var wasPlaying= false;
 
-  function setSrc(url, label){
-    songUrl   = url   || DEFAULT_SONG;
-    songLabel = label || DEFAULT_LABEL;
-    sv('music_url',   songUrl);
-    sv('music_label', songLabel);
-    titleEl.textContent = songLabel;
-    if(songUrl){
-      audio.src = songUrl;
-      audio.load();
-    } else {
-      audio.removeAttribute('src');
+  var ytPlayer = null;   // YT.Player instance
+  var ytReady  = false;
+  var audio    = null;   // HTMLAudioElement used only for direct-URL fallback
+  var useYT    = true;   // true = YouTube mode, false = direct audio fallback
+
+  titleEl.textContent = songLabel;
+
+  // ── Extract YouTube video ID from various URL shapes ──
+  function parseYtId(url){
+    if(!url) return null;
+    var m = url.match(/(?:youtu\.be\/|v=|\/embed\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  // ── Build / rebuild the hidden YT iframe ──
+  function initYT(videoId, autoplay){
+    useYT = true;
+    if(ytPlayer && ytReady){
+      ytPlayer.loadVideoById({videoId: videoId, startSeconds: 0});
+      if(!autoplay) ytPlayer.pauseVideo();
+      return;
     }
-    updateBtn();
+    // Create a fresh div for the player
+    var holder = $('yt-holder');
+    holder.innerHTML = '<div id="yt-iframe"></div>';
+    // YT.Player may already be available if the API loaded
+    if(window.YT && window.YT.Player){
+      _makePlayer(videoId, autoplay);
+    } else {
+      // Queue it — onYouTubeIframeAPIReady will fire once API loads
+      window._ytPending = {id: videoId, autoplay: autoplay};
+    }
+  }
+
+  function _makePlayer(videoId, autoplay){
+    ytPlayer = new YT.Player('yt-iframe', {
+      videoId: videoId,
+      playerVars: {
+        autoplay: autoplay ? 1 : 0,
+        loop: 1,
+        playlist: videoId,  // required for loop to work
+        controls: 0,
+        modestbranding: 1,
+        origin: location.origin || '*'
+      },
+      events: {
+        onReady: function(e){
+          ytReady = true;
+          if(autoplay) e.target.playVideo();
+          updateBtn();
+        },
+        onStateChange: function(){ updateBtn(); }
+      }
+    });
+  }
+
+  // Called by YouTube script after API loads
+  window.onYouTubeIframeAPIReady = function(){
+    if(window._ytPending){
+      _makePlayer(window._ytPending.id, window._ytPending.autoplay);
+      window._ytPending = null;
+    }
+  };
+
+  // ── Load the YouTube IFrame API script once ──
+  function loadYTApi(){
+    if(document.getElementById('yt-api-script')) return;
+    var s = document.createElement('script');
+    s.id  = 'yt-api-script';
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
+
+  // ── Determine playing state ──
+  function isPlaying(){
+    if(useYT && ytPlayer && ytReady) return ytPlayer.getPlayerState() === 1;
+    if(!useYT && audio) return !audio.paused;
+    return false;
   }
 
   function updateBtn(){
-    toggle.textContent = audio.paused ? '▶' : '⏸';
+    toggle.textContent = isPlaying() ? '⏸' : '▶';
   }
 
+  // ── Play ──
   function tryPlay(){
-    if(!songUrl){ openModal(); return; }
-    var p = audio.play();
-    if(p && p.catch) p.catch(function(){/* autoplay blocked — user must tap */});
+    if(useYT){
+      if(ytPlayer && ytReady){ ytPlayer.playVideo(); updateBtn(); }
+    } else if(audio){
+      var p = audio.play();
+      if(p && p.catch) p.catch(function(){});
+    }
   }
 
+  // ── Pause ──
+  function doPause(){
+    if(useYT && ytPlayer && ytReady) ytPlayer.pauseVideo();
+    else if(audio) audio.pause();
+    updateBtn();
+  }
+
+  // ── Set a new song ──
+  function setSong(url, label){
+    var id = parseYtId(url);
+    if(id){
+      ytId = id; songUrl = ''; useYT = true;
+      sv('music_ytid', ytId); sv('music_url', ''); sv('music_label', label);
+      songLabel = label; titleEl.textContent = label;
+      initYT(ytId, true);
+    } else {
+      // Direct audio fallback (MP3 / OGG / etc.)
+      useYT = false; ytId = ''; songUrl = url;
+      sv('music_ytid', ''); sv('music_url', url); sv('music_label', label);
+      songLabel = label; titleEl.textContent = label;
+      if(!audio){ audio = new Audio(); audio.loop = true; }
+      audio.src = url; audio.load();
+      var p = audio.play();
+      if(p && p.catch) p.catch(function(){});
+    }
+    syncToFirestore();
+  }
+
+  // ── Toggle button ──
   toggle.onclick = function(){
-    if(audio.paused){ tryPlay(); } else { audio.pause(); }
+    if(isPlaying()) doPause(); else tryPlay();
     updateBtn();
   };
 
-  audio.addEventListener('play',  updateBtn);
-  audio.addEventListener('pause', updateBtn);
-  audio.addEventListener('ended', updateBtn);
-
-  // Open change-song modal
+  // ── Modal ──
   function openModal(){
-    urlInp.value = songUrl || '';
+    urlInp.value = ytId ? 'https://youtu.be/' + ytId : (songUrl || '');
     modal.classList.add('show');
     setTimeout(function(){ urlInp.focus(); }, 100);
   }
   function closeModal(){ modal.classList.remove('show'); }
-
   changeBtn.onclick = openModal;
   cancelBtn.onclick = closeModal;
   modal.addEventListener('click', function(e){ if(e.target===modal) closeModal(); });
@@ -1245,46 +1338,50 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}ca
   saveBtn.onclick = function(){
     var url = urlInp.value.trim();
     if(!url){ alert('Paste a song URL first ♥'); return; }
-    // Derive a short display name from the URL
-    var parts = url.split('/'); var fname = parts[parts.length-1].split('?')[0];
-    var label = decodeURIComponent(fname).replace(/\.[^.]+$/, '') || 'Our song';
-    setSrc(url, label + ' ♪');
+    var id = parseYtId(url);
+    var label = id ? (url.split('?')[0].split('/').pop() || 'Our song') + ' ♪' : (url.split('/').pop().split('?')[0].replace(/\.[^.]+$/,'') || 'Our song') + ' ♪';
+    setSong(url, label);
     closeModal();
-    // Auto-play the new song
-    setTimeout(tryPlay, 300);
   };
 
-  // Also save to Firestore so both devices share the same song
-  function syncMusicToFirestore(){
-    if(!db || !songUrl) return;
-    db.collection('usapp').doc('state').set({music_url: songUrl, music_label: songLabel},{merge:true})
-      .catch(function(e){ console.warn('music sync:', e); });
+  // ── Firestore sync ──
+  function syncToFirestore(){
+    if(!db) return;
+    db.collection('usapp').doc('state').set({
+      music_ytid: ytId||'', music_url: songUrl||'', music_label: songLabel
+    },{merge:true}).catch(function(e){ console.warn('music sync:',e); });
   }
-  saveBtn.addEventListener('click', function(){
-    setTimeout(syncMusicToFirestore, 500);
-  });
 
-  // Pull music_url from Firestore snapshot
   var _origApply = applySnapshot;
   applySnapshot = function(data){
     _origApply(data);
-    if(data['music_url'] && data['music_url'] !== songUrl){
-      setSrc(data['music_url'], data['music_label'] || DEFAULT_LABEL);
+    var remId    = data['music_ytid']  || '';
+    var remUrl   = data['music_url']   || '';
+    var remLabel = data['music_label'] || DEFAULT_LABEL;
+    if(remId && remId !== ytId){
+      ytId = remId; sv('music_ytid', ytId); sv('music_label', remLabel);
+      songLabel = remLabel; titleEl.textContent = remLabel;
+      initYT(ytId, false);
+    } else if(remUrl && remUrl !== songUrl){
+      setSong(remUrl, remLabel);
     }
   };
 
-  // Init — set src if we have a saved URL
-  setSrc(songUrl, songLabel);
-
-  // Autoplay — browsers require a user gesture first; we try immediately
-  // and fall back silently (user can tap ▶)
-  if(songUrl){
-    document.addEventListener('click', function onFirstClick(){
-      tryPlay();
-      document.removeEventListener('click', onFirstClick);
-    }, { once: true });
-    tryPlay(); // works on desktop, silently fails on mobile until tap
+  // ── Init on load ──
+  loadYTApi();
+  if(ytId){
+    // Autoplay on first user interaction (browser policy)
+    document.addEventListener('click', function onFirst(){
+      initYT(ytId, true);
+      document.removeEventListener('click', onFirst);
+    }, {once: true});
+    initYT(ytId, false); // load silently — plays after first tap
+  } else if(songUrl){
+    useYT = false;
+    audio = new Audio(); audio.loop = true; audio.src = songUrl; audio.load();
   }
+  titleEl.textContent = songLabel;
+  updateBtn();
 })();
 </script>
 </body>
