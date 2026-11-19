@@ -291,7 +291,7 @@ small{color:var(--mute)}
 <!-- Music player -->
 <div id="music-bar">
   <button id="music-toggle" title="Play / Pause">▶</button>
-  <span id="music-title">Planned — Nasty C ♪</span>
+  <span id="music-title">As Planned — Nasty C ♪</span>
   <button id="music-change">change</button>
 </div>
 <!-- Hidden YouTube player container -->
@@ -1188,9 +1188,9 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}ca
   var saveBtn   = $('music-save');
   var cancelBtn = $('music-cancel');
 
-  // "Planned" — Nasty C & Tellaman  (official YouTube video ID)
-  var DEFAULT_YT_ID    = 'YYsRpAkMBHk';
-  var DEFAULT_LABEL    = 'Planned — Nasty C ♪';
+  // "As Planned" — Nasty C & Tellaman  (YouTube video ID)
+  var DEFAULT_YT_ID    = 'NY0Dz6vGvbk';
+  var DEFAULT_LABEL    = 'As Planned — Nasty C ♪';
 
   var ytId    = ld('music_ytid',  DEFAULT_YT_ID);
   var songUrl = ld('music_url',   '');       // fallback direct audio URL
@@ -1299,6 +1299,7 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}ca
 
   // ── Set a new song ──
   function setSong(url, label){
+    ytInited = true;
     var id = parseYtId(url);
     if(id){
       ytId = id; songUrl = ''; useYT = true;
@@ -1319,7 +1320,16 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}ca
   }
 
   // ── Toggle button ──
+  var ytInited = false;
   toggle.onclick = function(){
+    if(!ytInited && ytId){
+      // First press — initialise the player and autoplay
+      ytInited = true;
+      loadYTApi();
+      initYT(ytId, true);
+      // updateBtn will fire from onReady/onStateChange
+      return;
+    }
     if(isPlaying()) doPause(); else tryPlay();
     updateBtn();
   };
@@ -1368,18 +1378,9 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}ca
   };
 
   // ── Init on load ──
+  // Load the YT API script silently so it's ready when the user taps ▶
   loadYTApi();
-  if(ytId){
-    // Autoplay on first user interaction (browser policy)
-    document.addEventListener('click', function onFirst(){
-      initYT(ytId, true);
-      document.removeEventListener('click', onFirst);
-    }, {once: true});
-    initYT(ytId, false); // load silently — plays after first tap
-  } else if(songUrl){
-    useYT = false;
-    audio = new Audio(); audio.loop = true; audio.src = songUrl; audio.load();
-  }
+  // Don't autoplay on load — browsers block it; the ▶ button handles first play
   titleEl.textContent = songLabel;
   updateBtn();
 })();
