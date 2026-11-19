@@ -73,14 +73,22 @@ small{color:var(--mute)}
 .mcard .b .mbtns button{font-size:.78rem;padding:4px 10px;background:var(--accent);color:#fff;border:0;border-radius:999px}
 .mcard .b .mbtns button.mrem{background:#9a6577}
 .mcard .b .medit{width:100%;font:inherit;font-size:.85rem;border:1px solid var(--soft);border-radius:8px;padding:6px;background:#fff;color:#4a1d2c;resize:vertical;display:none;min-height:80px;flex:1}
-/* Moment overlay */
-#mov{position:fixed;inset:0;z-index:60;display:none;background:rgba(0,0,0,.85);color:#fff;overflow-y:auto;-webkit-overflow-scrolling:touch;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 48px) 16px calc(env(safe-area-inset-bottom,0px) + 32px)}
-#mov.show{display:flex}
-#mov .mov-box{background:var(--card);color:var(--ink);border-radius:18px;padding:28px 24px 24px;max-width:540px;width:100%;position:relative;flex-shrink:0}
-#mov .mov-date{font-size:.85rem;color:var(--mute);margin-bottom:6px}
-#mov .mov-title{font-size:1.4rem;font-weight:bold;margin-bottom:8px;padding-right:44px;line-height:1.3}
-#mov .mov-body{font-size:1rem;white-space:pre-wrap;line-height:1.8;word-break:break-word}
-#mov .mov-close{position:absolute;top:14px;right:16px;background:none;color:var(--mute);font-size:1.3rem;padding:4px 10px;border:1px solid var(--soft);border-radius:999px}
+/* Moment full-screen overlay */
+#mov{position:fixed;inset:0;z-index:60;display:none;background:#0a0006;color:#fff;overflow:hidden}
+#mov.show{display:block}
+#mov-bg{position:absolute;inset:-30px;background-size:cover;background-position:center;filter:blur(28px) brightness(.35);transition:background .6s}
+#mov-count{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));left:16px;font-size:.9rem;opacity:.75;z-index:2}
+#mov-x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:14px;background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:6px 14px;font-size:1rem;z-index:2;cursor:pointer}
+#mov-content{position:absolute;inset:calc(env(safe-area-inset-top,0px) + 60px) 0 calc(env(safe-area-inset-bottom,0px) + 72px);overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 24px 20px;z-index:2;transition:transform .4s ease}
+#mov-content.zoomed{justify-content:flex-start;font-size:1.15rem}
+#mov-date-line{font-size:.85rem;opacity:.7;margin-bottom:6px;text-align:center}
+#mov-title-line{font-size:1.6rem;font-weight:bold;line-height:1.25;text-align:center;margin-bottom:10px;text-shadow:0 2px 12px rgba(0,0,0,.6);max-width:560px}
+#mov-author-line{font-size:.88rem;opacity:.65;margin-bottom:14px;text-align:center;font-style:italic}
+#mov-body-line{font-size:1.05rem;line-height:1.85;white-space:pre-wrap;word-break:break-word;max-width:600px;width:100%;text-align:left;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+#mov-content.zoomed #mov-body-line{font-size:1.3rem;line-height:2}
+#mov-ctl{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;gap:8px;justify-content:center;z-index:2}
+#mov-ctl button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:9px 18px;font:inherit;cursor:pointer;font-size:.9rem}
+#mov-ctl button:hover{background:rgba(255,255,255,.32)}
 /* Journal cards */
 .entry-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
 .ecard{background:var(--card);border:1px solid var(--soft);border-radius:14px;padding:14px;box-shadow:0 3px 12px rgba(230,59,111,.1);display:flex;flex-direction:column;gap:6px;animation:fly .35s ease}
@@ -136,6 +144,21 @@ small{color:var(--mute)}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
 .sync-dot.on{background:#4caf50}
 .sync-dot.off{background:#e63b6f}
+
+/* ===== Music player ===== */
+#music-bar{position:fixed;bottom:14px;left:14px;z-index:20;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);font-family:inherit;font-size:.78rem;color:var(--mute);max-width:calc(100vw - 140px)}
+#music-toggle{background:none;border:none;font-size:1.1rem;padding:0;cursor:pointer;line-height:1;color:var(--accent);flex-shrink:0}
+#music-toggle:hover{transform:scale(1.15)}
+#music-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;cursor:default}
+#music-change{background:none;border:none;font-size:.7rem;color:var(--mute);text-decoration:underline;padding:0;cursor:pointer;white-space:nowrap;flex-shrink:0}
+#music-change:hover{color:var(--accent);transform:none}
+#music-modal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:20px}
+#music-modal.show{display:flex}
+#music-modal .mm-box{background:var(--card);color:var(--ink);border-radius:18px;padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
+#music-modal h3{margin:0;font-size:1.1rem}
+#music-modal small{color:var(--mute);font-size:.8rem;line-height:1.4}
+#music-url{width:100%;font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--soft);border-radius:10px;padding:9px}
+#music-modal .mm-row{display:flex;gap:8px;justify-content:flex-end}
 </style>
 
 <!-- Firebase SDK (compat mode for browser) -->
@@ -163,7 +186,7 @@ small{color:var(--mute)}
 <details><summary>🗺️ Adventure Bucket List</summary><div class="body"><div id="v_Adventure"></div></div></details>
 
 <details><summary>🎡 Date Spinner</summary><div class="body">
-<canvas id="wheel" width="440" height="440"></canvas>
+<canvas id="wheel" width="340" height="340"></canvas>
 <div class="res" id="wres"></div>
 <div class="row" style="justify-content:center"><button id="spin">Spin ♥</button></div>
 <div class="row"><input type="text" id="newd" autocomplete="off" placeholder="Add a date idea…"><button id="addd">Add</button></div>
@@ -181,7 +204,7 @@ small{color:var(--mute)}
     <label style="font-size:.85rem;color:var(--mute);cursor:pointer">📷 Cover photo <input type="file" id="book-img" accept="image/*" hidden onchange="previewBookImg(this)"></label>
     <img id="book-img-preview" style="display:none;height:48px;border-radius:6px;object-fit:cover">
   </div>
-  <div class="save-row"><button onclick="addBook()">Add book ♥</button></div>
+  <div class="save-row"><button id="btn-add-book" onclick="addBook()">Add book ♥</button></div>
 </div>
 <div id="book-stage"></div>
 </div></details>
@@ -190,7 +213,7 @@ small{color:var(--mute)}
 <div class="q" id="dq"></div>
 <div class="row" style="justify-content:center"><button id="dprev">Back</button><button id="dnext">Next question ♥</button></div>
 <textarea id="dnotes-input" placeholder="Her answer, my answer, what to ask next…"></textarea>
-<div class="save-row"><button onclick="saveDnotes()">Save notes ♥</button></div>
+<div class="save-row"><button id="btn-save-dnotes" onclick="saveDnotes()">Save notes ♥</button></div>
 </div></details>
 
 <details><summary>📓 Conversation Journal</summary><div class="body">
@@ -198,7 +221,7 @@ small{color:var(--mute)}
   <input type="date" id="jour-date">
   <input type="text" id="jour-title" placeholder="Topic — e.g. Family, Dreams, Conflict…">
   <textarea id="jour-body" placeholder="What she shared · what I shared · worth revisiting…" style="min-height:100px"></textarea>
-  <div class="save-row"><button onclick="addJournal()">Save entry ♥</button></div>
+  <div class="save-row"><button id="btn-add-journal" onclick="addJournal()">Save entry ♥</button></div>
 </div>
 <div class="entry-cards" id="jour-cards"></div>
 </div></details>
@@ -210,13 +233,29 @@ small{color:var(--mute)}
   <input type="text" id="mom-title" placeholder="Title — e.g. First call, Inside joke…">
   <input type="date" id="mom-date">
   <textarea id="mom-body" placeholder="What happened, how it felt…" style="min-height:80px"></textarea>
-  <div class="save-row"><button onclick="addMoment()">Save moment ♥</button></div>
+  <div class="save-row"><button id="btn-add-moment" onclick="addMoment()">Save moment ♥</button></div>
 </div>
 <div id="mom-stage"></div>
 </div></details>
 
-<!-- Moment overlay -->
-<div id="mov" onclick="if(event.target===this)closeMov()"><div class="mov-box"><button class="mov-close" onclick="closeMov()">✕</button><div class="mov-date" id="mov-date"></div><div class="mov-title" id="mov-title"></div><div class="mov-author" id="mov-author" style="font-size:.88rem;color:var(--mute);margin-bottom:10px"></div><div class="mov-body" id="mov-body"></div></div></div>
+<!-- Moment full-screen overlay (matches gallery overlay style) -->
+<div id="mov">
+  <div id="mov-bg"></div>
+  <div id="mov-count"></div>
+  <button id="mov-x">✕</button>
+  <div id="mov-content">
+    <div id="mov-date-line"></div>
+    <div id="mov-title-line"></div>
+    <div id="mov-author-line"></div>
+    <div id="mov-body-line"></div>
+  </div>
+  <div id="mov-ctl">
+    <button id="mov-prev">◀</button>
+    <button id="mov-play">▶ Play</button>
+    <button id="mov-zoom">🔍 Zoom</button>
+    <button id="mov-next">▶</button>
+  </div>
+</div>
 
 <!-- ===== Photo Gallery ===== -->
 <details open id="gallery-section"><summary>📸 Photo Gallery <span class="chip" id="gcount"></span></summary><div class="body">
@@ -239,7 +278,7 @@ small{color:var(--mute)}
 <li>Anything either of us wants more or less of?</li>
 <li>What are we doing next? Spin the wheel 🎡</li></ul>
 <textarea id="weekly-input" placeholder="Notes…"></textarea>
-<div class="save-row"><button onclick="saveWeekly()">Save notes ♥</button></div>
+<div class="save-row"><button id="btn-save-weekly" onclick="saveWeekly()">Save notes ♥</button></div>
 </div></details>
 </main>
 
@@ -248,6 +287,28 @@ small{color:var(--mute)}
 <div id="octl"><button id="op">◀</button><button id="oplay">⏸</button><button id="oheart">♡</button><button id="odel">🗑</button><button id="on">▶</button></div></div>
 
 <button class="sync-badge" onclick="manualSync()" title="Tap to sync now"><span class="sync-dot" id="sdot"></span><span id="stxt">connecting…</span></button>
+
+<!-- Music player -->
+<div id="music-bar">
+  <button id="music-toggle" title="Play / Pause">▶</button>
+  <span id="music-title">Our song ♪</span>
+  <button id="music-change">change</button>
+</div>
+<audio id="music-audio" loop preload="none"></audio>
+
+<!-- Change song modal -->
+<div id="music-modal">
+  <div class="mm-box">
+    <h3>🎵 Change our song</h3>
+    <small>Paste a direct link to an MP3, OGG, or any audio file URL.<br>
+    Free options: upload to Cloudinary, Google Drive (direct link), or Dropbox (?dl=1).</small>
+    <input id="music-url" type="url" placeholder="https://…/song.mp3">
+    <div class="mm-row">
+      <button id="music-cancel" style="background:none;color:var(--mute);border:1px solid var(--soft);border-radius:999px;padding:8px 16px;font:inherit;cursor:pointer">Cancel</button>
+      <button id="music-save">Save ♥</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ===== FIREBASE CONFIG =====
@@ -441,13 +502,16 @@ renderAll();
 var ideas=ld('ideas',null)||["Walk + ice cream","Coffee + board game","30-minute lunch","Cook together","Read side by side","Storytime","Karaoke","Bowling","Go-karting","Escape room","Aquarium","Hike with a view","Cycle + picnic","Sunset + playlists","Trivia night","Mystery date"];
 var cv=document.getElementById('wheel'),cx=cv.getContext('2d'),ang=0,spinning=false;
 var cols=['#e63b6f','#ff8fab','#c9184a','#ffb3c6'];
-function wheel(){var n=ideas.length,r=220,a=2*Math.PI/n;cx.clearRect(0,0,440,440);
-for(var i=0;i<n;i++){cx.beginPath();cx.moveTo(220,220);cx.arc(220,220,r-4,ang+i*a,ang+(i+1)*a);cx.fillStyle=cols[i%4];cx.fill();
-cx.save();cx.translate(220,220);cx.rotate(ang+i*a+a/2);cx.fillStyle='#fff';cx.font='14px Georgia';cx.textAlign='right';
-cx.fillText(ideas[i].length>22?ideas[i].slice(0,21)+'…':ideas[i],r-16,5);cx.restore()}
-cx.beginPath();cx.arc(220,220,24,0,7);cx.fillStyle='#fff';cx.fill();
-cx.fillStyle='#e63b6f';cx.font='24px serif';cx.textAlign='center';cx.fillText('♥',220,228);
-cx.beginPath();cx.moveTo(432,220);cx.lineTo(448,208);cx.lineTo(448,232);cx.fillStyle='#7c3aed';cx.fill();}
+function wheel(){
+  var sz=cv.width, cx2=sz/2, r=cx2-4;
+  var n=ideas.length,a=2*Math.PI/n;cx.clearRect(0,0,sz,sz);
+  for(var i=0;i<n;i++){cx.beginPath();cx.moveTo(cx2,cx2);cx.arc(cx2,cx2,r,ang+i*a,ang+(i+1)*a);cx.fillStyle=cols[i%4];cx.fill();
+  cx.save();cx.translate(cx2,cx2);cx.rotate(ang+i*a+a/2);cx.fillStyle='#fff';cx.font='14px Georgia';cx.textAlign='right';
+  cx.fillText(ideas[i].length>22?ideas[i].slice(0,21)+'…':ideas[i],r-16,5);cx.restore()}
+  cx.beginPath();cx.arc(cx2,cx2,24,0,7);cx.fillStyle='#fff';cx.fill();
+  cx.fillStyle='#e63b6f';cx.font='24px serif';cx.textAlign='center';cx.fillText('♥',cx2,cx2+8);
+  cx.beginPath();cx.moveTo(sz-8,cx2);cx.lineTo(sz+8,cx2-12);cx.lineTo(sz+8,cx2+12);cx.fillStyle='#7c3aed';cx.fill();
+}
 document.getElementById('spin').onclick=function(){if(spinning)return;spinning=true;
 var tot=ang+Math.PI*2*(5+Math.random()*3),st=ang,t0=null,dur=4200;
 (function f(t){if(!t0)t0=t;var p=Math.min((t-t0)/dur,1),e=1-Math.pow(1-p,3);ang=st+(tot-st)*e;wheel();
@@ -512,7 +576,9 @@ function renderMoments(){
   var S = document.getElementById('mom-stage'); if(!S) return;
   S.innerHTML = '';
   if(!moments.length){ S.innerHTML='<p style="color:var(--mute);text-align:center;padding:20px 0">No moments yet — add your first one above ♥</p>'; return; }
-  var W = S.clientWidth || 320;
+  // clientWidth is 0 when the <details> is closed — walk up to find a visible ancestor width
+  var W = S.clientWidth || S.closest('details[open]')&&S.parentElement.clientWidth || document.querySelector('main').clientWidth || 320;
+  W = W || 320;
   var w = Math.min(180, W/2 - 14);
   var cols = Math.max(2, Math.floor(W / (w + 10)));
   var h = w * 1.25;
@@ -574,7 +640,7 @@ function renderMoments(){
           e.target.textContent = '✏ Edit';
         }
       }
-      if(a === 'open'){ openMov(i); }
+      if(a === 'open'){ openMov(i, moments); }
       if(a === 'del'){
         if(confirm('Remove this moment?')){ deleteMoment(i); }
       }
@@ -582,15 +648,69 @@ function renderMoments(){
     S.appendChild(d);
   });
 }
-function openMov(i, obj){
-  var m = obj || moments[i]; if(!m) return;
-  document.getElementById('mov-date').textContent = m.date || '';
-  document.getElementById('mov-title').textContent = m.title || '';
-  document.getElementById('mov-author').textContent = m.author ? 'by ' + m.author : '';
-  document.getElementById('mov-body').textContent = m.notes || m.body || '';
-  document.getElementById('mov').classList.add('show');
+// ===== Moment full-screen overlay =====
+var movIdx = 0, movList = [], movPlaying = false, movTimer = null, movZoomed = false;
+
+function movShow(){
+  if(!movList.length) return;
+  movIdx = (movIdx + movList.length) % movList.length;
+  var m = movList[movIdx];
+  // blurred background gradient based on accent colour (no image, so use a colour wash)
+  $('mov-bg').style.background = 'radial-gradient(ellipse at 60% 40%, #4a1d2c 0%, #0a0006 70%)';
+  $('mov-date-line').textContent = m.date || '';
+  $('mov-title-line').textContent = m.title || '';
+  $('mov-author-line').textContent = m.author ? 'by ' + m.author : '';
+  $('mov-body-line').textContent = m.notes || m.body || '';
+  $('mov-count').textContent = (movIdx + 1) + ' / ' + movList.length;
+  $('mov-play').textContent = movPlaying ? '⏸ Pause' : '▶ Play';
+  $('mov-zoom').textContent = movZoomed ? '🔎 Normal' : '🔍 Zoom';
+  $('mov-content').classList.toggle('zoomed', movZoomed);
+  // scroll back to top on each entry
+  $('mov-content').scrollTop = 0;
 }
-function closeMov(){ document.getElementById('mov').classList.remove('show'); }
+
+function movPlayToggle(){
+  movPlaying = !movPlaying;
+  clearInterval(movTimer);
+  if(movPlaying){ movTimer = setInterval(function(){ movIdx++; movShow(); }, 6000); }
+  movShow();
+}
+
+function openMov(i, list){
+  movList = list || moments;
+  movIdx = (i == null ? 0 : i);
+  movZoomed = false;
+  movPlaying = false;
+  clearInterval(movTimer);
+  $('mov').classList.add('show');
+  movShow();
+}
+
+function closeMov(){
+  $('mov').classList.remove('show');
+  movPlaying = false;
+  clearInterval(movTimer);
+}
+
+$('mov-x').onclick = closeMov;
+$('mov-prev').onclick = function(){ movIdx--; movShow(); };
+$('mov-next').onclick = function(){ movIdx++; movShow(); };
+$('mov-play').onclick = movPlayToggle;
+$('mov-zoom').onclick = function(){
+  movZoomed = !movZoomed;
+  movShow();
+};
+// tap background to close
+$('mov').addEventListener('click', function(e){
+  if(e.target === $('mov')) closeMov();
+});
+// swipe support
+var movSwx = 0;
+$('mov').addEventListener('touchstart', function(e){ movSwx = e.touches[0].clientX; }, {passive:true});
+$('mov').addEventListener('touchend', function(e){
+  var d = e.changedTouches[0].clientX - movSwx;
+  if(Math.abs(d) > 50){ movIdx += d < 0 ? 1 : -1; movShow(); }
+});
 function addMoment(){
   try {
   var title = document.getElementById('mom-title').value.trim();
@@ -604,7 +724,7 @@ function addMoment(){
   document.getElementById('mom-date').valueAsDate=new Date();
   document.getElementById('mom-body').value='';
   renderMoments();
-  var btn=document.querySelector('[onclick="addMoment()"]');
+  var btn=document.getElementById('btn-add-moment');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
   } catch(e){alert('Moment error: '+e.message);}
 }
@@ -636,7 +756,8 @@ function renderBooks(){
   var S = document.getElementById('book-stage'); if(!S) return;
   S.innerHTML = '';
   if(!books.length){ S.innerHTML='<p style="color:var(--mute);text-align:center;padding:20px 0">No books yet — add your first one above ♥</p>'; return; }
-  var W = S.clientWidth || 320;
+  var W = S.clientWidth || S.closest('details[open]')&&S.parentElement.clientWidth || document.querySelector('main').clientWidth || 320;
+  W = W || 320;
   var w = Math.min(160, W/2 - 14);
   var cols = Math.max(2, Math.floor(W / (w + 10)));
   var h = w * 1.6;
@@ -693,7 +814,7 @@ function renderBooks(){
           ta.style.display='none';body.style.display='';e.target.textContent='✏ Edit';
         }
       }
-      if(a==='open'){ openMov(null, books[i]); }
+      if(a==='open'){ openMov(0, [books[i]]); }
       if(a==='del'){ if(confirm('Remove this book?')){ books.splice(i,1); saveData('f_books',books); renderBooks(); } }
     };
     S.appendChild(d);
@@ -715,7 +836,7 @@ function addBook(){
   bookImgData = null;
   document.getElementById('book-img').value='';
   renderBooks();
-  var btn=document.querySelector('[onclick="addBook()"]');
+  var btn=document.getElementById('btn-add-book');
   if(btn){var orig=btn.textContent;btn.textContent='Added ♥';setTimeout(function(){btn.textContent=orig;},1500);}
   } catch(e){alert('Book error: '+e.message);}
 }
@@ -732,10 +853,18 @@ function renderJournal(){
     d.innerHTML = '<div class="edate">'+esc(e.date||'')+'</div>'
       +'<div class="etitle">'+esc(e.title||'')+'</div>'
       +'<div class="ebody">'+esc(e.body||'')+'</div>'
-      +'<button class="edel" onclick="deleteJournal('+i+')">Remove</button>';
+      +'<button class="edel" data-ji="'+i+'">Remove</button>';
     c.appendChild(d);
   });
 }
+// journal delete via event delegation — no stale closure
+document.getElementById('jour-cards').addEventListener('click', function(e){
+  var btn = e.target.closest('.edel');
+  if(!btn) return;
+  var idx = parseInt(btn.dataset.ji, 10);
+  if(isNaN(idx)) return;
+  deleteJournal(idx);
+});
 function addJournal(){
   try {
   var date  = document.getElementById('jour-date').value;
@@ -748,7 +877,7 @@ function addJournal(){
   document.getElementById('jour-title').value='';
   document.getElementById('jour-body').value='';
   renderJournal();
-  var btn=document.querySelector('[onclick="addJournal()"]');
+  var btn=document.getElementById('btn-add-journal');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
   } catch(e){alert('Journal error: '+e.message);}
 }
@@ -769,7 +898,7 @@ function saveDnotes(){
   var v = dnotesEl ? dnotesEl.value : '';
   sv('f_dnotes', v);
   saveData('f_dnotes', v);
-  var btn=document.querySelector('[onclick="saveDnotes()"]');
+  var btn=document.getElementById('btn-save-dnotes');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
 
@@ -780,7 +909,7 @@ function saveWeekly(){
   var v = weeklyEl ? weeklyEl.value : '';
   sv('f_weekly', v);
   saveData('f_weekly', v);
-  var btn=document.querySelector('[onclick="saveWeekly()"]');
+  var btn=document.getElementById('btn-save-weekly');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
 
@@ -800,20 +929,25 @@ function applySnapshot(data){
     document.getElementById('tt').innerHTML='<tr><th>Topic</th><th>Status</th><th>Next opening</th></tr>'+tt.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
   }
   if(data['f_questions']){qs=data['f_questions'];showQ()}
-  // Moments — only apply if incoming data is an array and not older than local
-  if(data['f_moments'] && Array.isArray(data['f_moments']) && data['f_moments'].length >= moments.length){
+  // Moments — apply any change from Firestore (including deletions)
+  if(data['f_moments'] && Array.isArray(data['f_moments'])){
     var incoming=JSON.stringify(data['f_moments']);
     if(incoming!==JSON.stringify(moments)){moments=data['f_moments'];sv('f_moments',moments);renderMoments();}
   }
   // Books
-  if(data['f_books'] && Array.isArray(data['f_books']) && data['f_books'].length >= books.length){
+  if(data['f_books'] && Array.isArray(data['f_books'])){
     var incomingB=JSON.stringify(data['f_books']);
     if(incomingB!==JSON.stringify(books)){books=data['f_books'];sv('f_books',books);renderBooks();}
   }
-  // Journal — only apply if incoming data is an array and not older than local
-  if(data['f_journal'] && Array.isArray(data['f_journal']) && data['f_journal'].length >= journalEntries.length){
+  // Journal
+  if(data['f_journal'] && Array.isArray(data['f_journal'])){
     var incomingJ=JSON.stringify(data['f_journal']);
     if(incomingJ!==JSON.stringify(journalEntries)){journalEntries=data['f_journal'];sv('f_journal',journalEntries);renderJournal();}
+  }
+  // Favourites
+  if(data['gfavs'] && Array.isArray(data['gfavs'])){
+    var incomingF=JSON.stringify(data['gfavs']);
+    if(incomingF!==JSON.stringify(gfavs)){gfavs=data['gfavs'];sv('gfavs',gfavs);}
   }
   // Plain text fields
   if(typeof data['f_dnotes']!=='undefined' && dnotesEl && dnotesEl!==document.activeElement){
@@ -991,8 +1125,24 @@ function closeOv(){$('ov').classList.remove('show');play(false)}
 $('on').onclick=function(){gidx++;show()};$('op').onclick=function(){gidx--;show()};$('oplay').onclick=function(){play(!gplaying)};$('ox').onclick=closeOv;
 $('odel').onclick=function(){var L=gList();if(!L.length)return;var was=gplaying;play(false);delPhoto(L[gidx]).then(function(ok){if(!ok){play(was);return}gRend();if(!gList().length)closeOv();else show()})};
 $('oheart').onclick=function(e){var L=gList();gTog(L[gidx].id,e.clientX,e.clientY);show()};
-document.addEventListener('keydown',function(e){if(!$('ov').classList.contains('show'))return;if(e.key==='Escape')closeOv();if(e.key==='ArrowRight'){gidx++;show()}if(e.key==='ArrowLeft'){gidx--;show()}});
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMov();});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    // gallery takes priority — only close moment overlay if gallery is not open
+    if($('ov').classList.contains('show')){ closeOv(); return; }
+    if($('mov').classList.contains('show')){ closeMov(); return; }
+  }
+  // gallery arrow keys
+  if($('ov').classList.contains('show')){
+    if(e.key==='ArrowRight'){gidx++;show()}
+    if(e.key==='ArrowLeft'){gidx--;show()}
+    return;
+  }
+  // moment overlay arrow keys
+  if($('mov').classList.contains('show')){
+    if(e.key==='ArrowRight'){movIdx++;movShow();}
+    if(e.key==='ArrowLeft'){movIdx--;movShow();}
+  }
+});
 var swx=0;$('ov').addEventListener('touchstart',function(e){swx=e.touches[0].clientX},{passive:true});
 $('ov').addEventListener('touchend',function(e){var d=e.changedTouches[0].clientX-swx;if(Math.abs(d)>50){gidx+=d<0?1:-1;show()}});
 
@@ -1020,9 +1170,122 @@ $('ggo').onclick=async function(e){
 
 // init gallery
 loadPhotos();
-window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(gRend,250)});
+window.addEventListener('resize',function(){
+  clearTimeout(window._rz);
+  window._rz=setTimeout(function(){ gRend(); renderMoments(); renderBooks(); },250);
+});
 
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+// ===== Music player =====
+(function(){
+  var audio  = $('music-audio');
+  var toggle = $('music-toggle');
+  var titleEl= $('music-title');
+  var changeBtn = $('music-change');
+  var modal  = $('music-modal');
+  var urlInp = $('music-url');
+  var saveBtn= $('music-save');
+  var cancelBtn=$('music-cancel');
+
+  // Default song — a royalty-free lo-fi track via ccMixter / public domain
+  var DEFAULT_SONG = '';
+  var DEFAULT_LABEL = 'Our song ♪';
+
+  var songUrl   = ld('music_url',   DEFAULT_SONG);
+  var songLabel = ld('music_label', DEFAULT_LABEL);
+  var wasPlaying= false;
+
+  function setSrc(url, label){
+    songUrl   = url   || DEFAULT_SONG;
+    songLabel = label || DEFAULT_LABEL;
+    sv('music_url',   songUrl);
+    sv('music_label', songLabel);
+    titleEl.textContent = songLabel;
+    if(songUrl){
+      audio.src = songUrl;
+      audio.load();
+    } else {
+      audio.removeAttribute('src');
+    }
+    updateBtn();
+  }
+
+  function updateBtn(){
+    toggle.textContent = audio.paused ? '▶' : '⏸';
+  }
+
+  function tryPlay(){
+    if(!songUrl){ openModal(); return; }
+    var p = audio.play();
+    if(p && p.catch) p.catch(function(){/* autoplay blocked — user must tap */});
+  }
+
+  toggle.onclick = function(){
+    if(audio.paused){ tryPlay(); } else { audio.pause(); }
+    updateBtn();
+  };
+
+  audio.addEventListener('play',  updateBtn);
+  audio.addEventListener('pause', updateBtn);
+  audio.addEventListener('ended', updateBtn);
+
+  // Open change-song modal
+  function openModal(){
+    urlInp.value = songUrl || '';
+    modal.classList.add('show');
+    setTimeout(function(){ urlInp.focus(); }, 100);
+  }
+  function closeModal(){ modal.classList.remove('show'); }
+
+  changeBtn.onclick = openModal;
+  cancelBtn.onclick = closeModal;
+  modal.addEventListener('click', function(e){ if(e.target===modal) closeModal(); });
+
+  saveBtn.onclick = function(){
+    var url = urlInp.value.trim();
+    if(!url){ alert('Paste a song URL first ♥'); return; }
+    // Derive a short display name from the URL
+    var parts = url.split('/'); var fname = parts[parts.length-1].split('?')[0];
+    var label = decodeURIComponent(fname).replace(/\.[^.]+$/, '') || 'Our song';
+    setSrc(url, label + ' ♪');
+    closeModal();
+    // Auto-play the new song
+    setTimeout(tryPlay, 300);
+  };
+
+  // Also save to Firestore so both devices share the same song
+  function syncMusicToFirestore(){
+    if(!db || !songUrl) return;
+    db.collection('usapp').doc('state').set({music_url: songUrl, music_label: songLabel},{merge:true})
+      .catch(function(e){ console.warn('music sync:', e); });
+  }
+  saveBtn.addEventListener('click', function(){
+    setTimeout(syncMusicToFirestore, 500);
+  });
+
+  // Pull music_url from Firestore snapshot
+  var _origApply = applySnapshot;
+  applySnapshot = function(data){
+    _origApply(data);
+    if(data['music_url'] && data['music_url'] !== songUrl){
+      setSrc(data['music_url'], data['music_label'] || DEFAULT_LABEL);
+    }
+  };
+
+  // Init — set src if we have a saved URL
+  setSrc(songUrl, songLabel);
+
+  // Autoplay — browsers require a user gesture first; we try immediately
+  // and fall back silently (user can tap ▶)
+  if(songUrl){
+    document.addEventListener('click', function onFirstClick(){
+      tryPlay();
+      document.removeEventListener('click', onFirstClick);
+    }, { once: true });
+    tryPlay(); // works on desktop, silently fails on mobile until tap
+  }
+})();
 </script>
 </body>
 </html>
