@@ -579,9 +579,10 @@ if(!Array.isArray(dnotesArr)) dnotesArr = [];
 function showQ(){
   document.getElementById('dq').textContent = 'Question '+(qi+1)+': '+qs[qi];
   sv('qi', qi);
-  // Load this question's saved note into the textarea
+  // Clear the textarea when navigating — it's a scratchpad, not an editor.
+  // The saved note is visible in the card below.
   var dnotesEl = document.getElementById('dnotes-input');
-  if(dnotesEl) dnotesEl.value = dnotesArr[qi] || '';
+  if(dnotesEl) dnotesEl.value = '';
   renderDiscoveryCards();
 }
 
@@ -1043,14 +1044,11 @@ function applySnapshot(data){
   // Daily Discovery notes — now an array keyed by question index
   if(typeof data['f_dnotes']!=='undefined'){
     var incoming = data['f_dnotes'];
-    // Handle both legacy string (index 0 only) and array
     if(typeof incoming === 'string') incoming = [incoming];
     if(Array.isArray(incoming)){
       dnotesArr = incoming;
       sv('f_dnotes', dnotesArr);
-      if(dnotesEl && dnotesEl !== document.activeElement){
-        dnotesEl.value = dnotesArr[qi] || '';
-      }
+      // Don't touch the textarea — it's a scratchpad; cards show saved notes
       renderDiscoveryCards();
     }
   }
