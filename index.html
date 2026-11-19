@@ -402,9 +402,11 @@ var inp=h.querySelector('input'), cachedVal='';
 inp.addEventListener('input',function(){cachedVal=inp.value;});
 inp.addEventListener('change',function(){cachedVal=inp.value;});
 h.querySelector('button').onclick=function(){
-  var v=(cachedVal||inp.value).trim();
-  if(!v||v==='on'){alert('Type something first ♥');return;}
-  ol.push([v,t,0]);saveData('ol2',ol);inp.value='';cachedVal='';renderAll();
+  try {
+    var v=(cachedVal||inp.value).trim();
+    if(!v||v==='on'){alert('Type something first ♥');return;}
+    ol.push([v,t,0]);sv('ol2',ol);saveData('ol2',ol);inp.value='';cachedVal='';renderAll();
+  } catch(e){ alert('Add error: '+e.message); }
 }});
 var sel=document.getElementById('newt');TYPES.forEach(function(t){var o=document.createElement('option');o.textContent=t;sel.appendChild(o)});
 var newiVal='';
@@ -412,9 +414,15 @@ var newi=document.getElementById('newi');
 newi.addEventListener('input',function(){newiVal=newi.value;});
 newi.addEventListener('change',function(){newiVal=newi.value;});
 document.getElementById('addi').onclick=function(){
-  var val=(newiVal||newi.value).trim();
-  if(!val||val==='on'){alert('Type something first ♥');return;}
-  ol.push([val,sel.value,0]);saveData('ol2',ol);newi.value='';newiVal='';renderAll();
+  try {
+    var val=(newiVal||newi.value).trim();
+    if(!val||val==='on'){alert('Type something first ♥');return;}
+    ol.push([val,sel.value,0]);
+    sv('ol2',ol);
+    saveData('ol2',ol);
+    newi.value='';newiVal='';
+    renderAll();
+  } catch(e){ alert('Add error: '+e.message); }
 };
 function renderAll(){
 var ni=fill(document.getElementById('inc'),function(x){return !x[2]});
