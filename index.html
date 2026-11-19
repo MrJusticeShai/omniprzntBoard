@@ -586,30 +586,31 @@ function showQ(){
 
 function renderDiscoveryCards(){
   var c = document.getElementById('dnotes-cards'); if(!c) return;
-  c.innerHTML = '';
   var hasAny = false;
+  // Build new HTML without animation class to avoid flicker on re-render
+  var html = '';
   qs.forEach(function(q, i){
     if(!dnotesArr[i] || !dnotesArr[i].trim()) return;
     hasAny = true;
-    var card = document.createElement('div');
-    card.className = 'ecard';
-    card.style.marginBottom = '10px';
     var isActive = (i === qi);
-    card.innerHTML =
-      '<div class="edate" style="display:flex;justify-content:space-between;align-items:center">'
-      +  '<span>Q'+(i+1)+(isActive ? ' <span style="background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px;font-size:.72rem">current</span>' : '')+'</span>'
+    html +=
+      '<div class="ecard" style="animation:none;margin-bottom:10px">'
+      + '<div class="edate" style="display:flex;justify-content:space-between;align-items:center">'
+      +   '<span>Q'+(i+1)+(isActive ? ' <span style="background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px;font-size:.72rem">current</span>' : '')+'</span>'
       + '</div>'
       + '<div class="etitle" style="font-size:.85rem;font-weight:normal;color:var(--mute);margin-bottom:4px">'+esc(q)+'</div>'
       + '<div class="ebody">'+esc(dnotesArr[i])+'</div>'
       + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
       +   '<button class="edel" data-dni="'+i+'">Remove</button>'
       +   '<button class="edel" data-dgo="'+i+'" style="color:var(--accent);border-color:var(--accent)">Go to Q'+(i+1)+'</button>'
+      + '</div>'
       + '</div>';
-    c.appendChild(card);
   });
   if(!hasAny){
-    c.innerHTML = '<p style="color:var(--mute);font-size:.88rem;text-align:center;padding:10px 0">Save a note above and it\'ll appear here, tied to its question ♥</p>';
+    html = '<p style="color:var(--mute);font-size:.88rem;text-align:center;padding:10px 0">Save a note above and it\'ll appear here, tied to its question ♥</p>';
   }
+  // Only touch the DOM if something actually changed
+  if(c.innerHTML !== html) c.innerHTML = html;
 }
 
 // Event delegation for discovery cards
@@ -985,6 +986,7 @@ function saveDnotes(){
   if(!v){ alert('Write something first ♥'); return; }
   dnotesArr[qi] = v;
   saveData('f_dnotes', dnotesArr);
+  if(dnotesEl) dnotesEl.value = '';   // clear after save
   renderDiscoveryCards();
   var btn=document.getElementById('btn-save-dnotes');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
