@@ -111,19 +111,6 @@ small{color:var(--mute)}
 .gup{background:var(--bg);border:2px dashed var(--accent);border-radius:14px;padding:14px;margin:14px 0;text-align:center;transition:background .2s}
 .gup.drag{background:var(--soft)}
 .gup input[type=text],.gup select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--soft);border-radius:10px;padding:8px;margin:4px;max-width:100%}
-#gstage{position:relative;margin-top:16px}
-#gstage.table{min-height:220px}
-.pol{position:absolute;width:var(--w);perspective:900px;touch-action:none;cursor:grab;transition:box-shadow .2s;animation:drop .6s both}
-.pol:active{cursor:grabbing}
-@keyframes drop{from{opacity:0;transform:translateY(-40px) rotate(20deg)}}
-.pol .in{position:relative;width:100%;aspect-ratio:4/5;transform-style:preserve-3d;transition:transform .6s}
-.pol.flip .in{transform:rotateY(180deg)}
-.pol .f,.pol .b{position:absolute;inset:0;backface-visibility:hidden;background:#fff;color:#4a1d2c;border-radius:6px;padding:8px 8px 0;box-shadow:0 6px 18px rgba(0,0,0,.22);overflow:hidden}
-.pol .f img{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none;border-radius:2px}
-.pol .f p{margin:8px 0;text-align:center;font-style:italic;font-size:.9rem}
-.pol .b{transform:rotateY(180deg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:10px;background:#fff7f9}
-.pol .b button{font-size:.85rem;padding:5px 12px;background:var(--accent);color:#fff;border:0}
-#gstage.heart{margin:20px auto}
 .hp{position:absolute;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;transition:transform .25s;animation:pop .6s both}
 .hp:hover{transform:scale(1.3);z-index:5}
 @keyframes pop{from{opacity:0;transform:scale(0)}}
@@ -145,6 +132,43 @@ small{color:var(--mute)}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
 .sync-dot.on{background:#4caf50}
 .sync-dot.off{background:#e63b6f}
+
+/* ===== Photo tile grid (replaces absolute-position table) ===== */
+.gtable-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:8px 0}
+.gtile{background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--soft);box-shadow:0 2px 8px rgba(0,0,0,.1);animation:fly .35s ease both;display:flex;flex-direction:column}
+.gtile img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.gtile-info{padding:6px 8px 2px;flex:1}
+.gtile-cap{display:block;font-size:.82rem;font-style:italic;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtile-alb{display:block;font-size:.72rem;color:var(--mute);margin-top:1px}
+.gtile-actions{display:flex;gap:4px;padding:6px 8px;border-top:1px solid var(--soft)}
+.gtile-actions button{flex:1;font-size:.78rem;padding:4px 2px;background:var(--accent);color:#fff;border:0;border-radius:6px;cursor:pointer;transition:transform .15s}
+.gtile-actions button:hover{transform:scale(1.08)}
+.gtile-del{background:#9a6577 !important}
+
+/* ===== Album sections ===== */
+.album-section{margin:12px 0;border:1px solid var(--soft);border-radius:14px;background:var(--card)}
+.album-section summary{list-style:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:.95rem;user-select:none;background:var(--bg)}
+.album-section summary::-webkit-details-marker{display:none}
+.album-section summary .alb-chip{font-size:.75rem;background:var(--accent);color:#fff;border-radius:99px;padding:2px 9px;font-weight:500}
+.album-section summary .alb-del{margin-left:6px;background:none;border:none;cursor:pointer;font-size:.85rem;color:var(--mute);padding:2px 6px;border-radius:6px;line-height:1}
+.album-section summary .alb-del:hover{background:#9a65771a;color:#9a6577}
+.album-section[open] summary::after{transform:rotate(180deg) scale(1.3)}
+.album-body{padding:10px;display:flow-root}
+/* heart-view stage must size itself to contain absolute children */
+.heart{position:relative;display:block;overflow:hidden;margin:8px auto}
+/* new-album row */
+.new-alb-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 4px}
+.new-alb-row input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--soft);border-radius:10px;padding:7px 11px;flex:1;min-width:140px}
+.new-alb-row button{font:inherit;border-radius:999px;background:var(--accent);color:#fff;border:0;padding:7px 16px;cursor:pointer;white-space:nowrap}
+/* move-photo modal */
+#gmove-modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:20px}
+#gmove-modal.show{display:flex}
+#gmove-modal .gm-box{background:var(--card);color:var(--ink);border-radius:18px;padding:22px 20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}
+#gmove-modal h3{margin:0;font-size:1rem}
+.gm-alb-btn{font:inherit;border-radius:10px;background:var(--bg);border:1px solid var(--soft);color:var(--ink);padding:9px 14px;cursor:pointer;text-align:left;transition:background .15s}
+.gm-alb-btn:hover{background:var(--soft)}
+.gm-alb-btn.current{opacity:.4;cursor:default}
+#gmove-cancel{background:none;border:none;color:var(--mute);font:inherit;cursor:pointer;text-decoration:underline;font-size:.85rem;align-self:flex-end}
 
 /* ===== Music player ===== */
 #music-bar{position:fixed;bottom:14px;left:14px;z-index:20;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);font-family:inherit;font-size:.78rem;color:var(--mute);max-width:calc(100vw - 140px)}
@@ -173,7 +197,7 @@ small{color:var(--mute)}
 <h1>Us <span class="beat">💛</span></h1>
 <p class="sub">Babyydiamond · beautifulGirl · thabyBear</p>
 
-<details open><summary>⏳ Incoming <span class="chip" id="ninc"></span></summary><div class="body">
+<details><summary>⏳ Incoming <span class="chip" id="ninc"></span></summary><div class="body">
 <small>Tick something and it flies over to Done. Untick it in Done to bring it back.</small>
 <div id="inc"></div>
 <div class="row"><input type="text" id="newi" autocomplete="off" placeholder="Add something we want to do…"><select id="newt"></select><button id="addi">Add</button></div>
@@ -233,7 +257,7 @@ small{color:var(--mute)}
 
 <details><summary>🧭 Topic Tracker</summary><div class="body"><div class="scroll"><table id="tt"></table></div></div></details>
 
-<details open><summary>✨ Our Moments</summary><div class="body">
+<details><summary>✨ Our Moments</summary><div class="body">
 <div class="entry-form" id="mom-form">
   <input type="text" id="mom-title" placeholder="Title — e.g. First call, Inside joke…">
   <input type="date" id="mom-date">
@@ -263,17 +287,22 @@ small{color:var(--mute)}
 </div>
 
 <!-- ===== Photo Gallery ===== -->
-<details open id="gallery-section"><summary>📸 Photo Gallery <span class="chip" id="gcount"></span></summary><div class="body">
+<details id="gallery-section"><summary>📸 Photo Gallery <span class="chip" id="gcount"></span></summary><div class="body">
 <div class="gbar">
-<button id="gvt" class="on">🃏 Table</button><button id="gvh">💗 Heart wall</button><button id="gvs" class="pri">▶ Play our story</button><button id="gvr">🎲 Surprise me</button>
+<button id="gvt" class="on">🃏 Table</button><button id="gvh">💗 Heart wall</button><button id="gvr">🎲 Surprise me</button>
 </div>
-<div class="gbar" id="gchips"></div>
 <div class="gup" id="gup">
 <div>📷 Drop photos here, or <button class="pri" id="gpick">choose photos</button><input type="file" id="gfile" accept="image/*" multiple hidden></div>
 <div><input type="text" id="gcap" placeholder="Caption (optional)" maxlength="60"><select id="gchs"></select><button class="pri" id="ggo">Add to album ♥</button></div>
 <small id="gst"></small>
 </div>
-<div id="gstage"></div>
+<!-- New album form -->
+<div class="new-alb-row">
+  <input type="text" id="gnewname" placeholder="New album name…" maxlength="40">
+  <button id="gnewbtn">＋ Create album</button>
+</div>
+<!-- Per-album collapsible sections rendered here -->
+<div id="galbums"></div>
 </div></details>
 
 <details><summary>🔄 Weekly Check-in</summary><div class="body">
@@ -286,6 +315,15 @@ small{color:var(--mute)}
 <div class="save-row"><button id="btn-save-weekly" onclick="saveWeekly()">Save notes ♥</button></div>
 </div></details>
 </main>
+
+<!-- Move-photo modal -->
+<div id="gmove-modal">
+  <div class="gm-box">
+    <h3>📂 Move photo to album</h3>
+    <div id="gmove-list"></div>
+    <button id="gmove-cancel">Cancel</button>
+  </div>
+</div>
 
 <!-- Gallery overlay -->
 <div id="ov"><div id="obg"></div><img id="oimg" alt=""><div id="ocount"></div><button id="ox">✕</button><div id="ocap"></div>
@@ -1094,8 +1132,66 @@ function manualSync(){
 }
 
 // ===== PHOTO GALLERY (Cloudinary + Firestore) =====
-var GCH=[["first-date","First date"],["adventures","Adventures"],["trips","Trips"],["everyday","Everyday"]];
-var gphotos=[], gfavs=[], gview='table', gfilt='all', gidx=0, gtimer=null, gplaying=false;
+
+// --- Album registry ---
+// Built-in albums (never deletable)
+var GCH_BUILTIN=[["first-date","First date"],["adventures","Adventures"],["trips","Trips"],["everyday","Everyday"]];
+// GCH = builtin + custom; rebuilt on load & after mutations
+var GCH=GCH_BUILTIN.slice();
+
+// Load custom albums from localStorage (Firestore sync added below)
+function loadCustomAlbums(){
+  var custom=ld('gcustom',[]);
+  GCH=GCH_BUILTIN.slice();
+  custom.forEach(function(c){GCH.push(c)});
+}
+
+function saveCustomAlbums(){
+  var custom=GCH.filter(function(c){return !GCH_BUILTIN.some(function(b){return b[0]===c[0]})});
+  saveData('gcustom',custom);
+  if(db){
+    db.collection('config').doc('albums').set({custom:custom}).catch(function(e){console.warn('albums sync:',e)});
+  }
+}
+
+// Add a new custom album
+function addAlbum(name){
+  var key='alb-'+Date.now();
+  var label=name.trim();
+  if(!label)return;
+  if(GCH.some(function(c){return c[1].toLowerCase()===label.toLowerCase()})){
+    alert('An album with that name already exists.');return;
+  }
+  GCH.push([key,label]);
+  saveCustomAlbums();
+  rebuildAlbumSelect();
+  gRend();
+}
+
+// Delete a custom album (re-assign its photos to Everyday)
+async function deleteAlbum(key){
+  if(GCH_BUILTIN.some(function(b){return b[0]===key})){return}
+  if(!confirm('Delete this album? Its photos will be moved to Everyday.'))return;
+  // move photos
+  var toMove=gphotos.filter(function(p){return p.ch===key});
+  for(var p of toMove){
+    await movePhotoToAlbum(p,'everyday',true);
+  }
+  GCH=GCH.filter(function(c){return c[0]!==key});
+  saveCustomAlbums();
+  rebuildAlbumSelect();
+  gRend();
+}
+
+// Rebuild the <select> in the upload row
+function rebuildAlbumSelect(){
+  var sel=$('gchs');sel.innerHTML='';
+  GCH.forEach(function(c){var o=document.createElement('option');o.value=c[0];o.textContent=c[1];sel.appendChild(o)});
+}
+
+var gphotos=[], gfavs=[], gview='table', gidx=0, gtimer=null, gplaying=false;
+// gfilt kept for overlay/story filtering, but albums view ignores it
+var gfilt='all';
 
 // Cloudinary URL helpers
 function cThumb(pid){return 'https://res.cloudinary.com/'+CLOUD_NAME+'/image/upload/c_fill,w_400,h_500,q_auto/'+pid+'.jpg'}
@@ -1104,23 +1200,21 @@ function cFull(pid){return 'https://res.cloudinary.com/'+CLOUD_NAME+'/image/uplo
 function gChLabel(k){for(var i=0;i<GCH.length;i++)if(GCH[i][0]===k)return GCH[i][1];return 'Everyday'}
 function gFmt(d){try{return new Date(d).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}catch(e){return ''}}
 
-// populate chapter select
-GCH.forEach(function(c){var o=document.createElement('option');o.value=c[0];o.textContent=c[1];$('gchs').appendChild(o)});
-
-// Upload to Cloudinary
-async function uploadCloudinary(file){
-  var fd=new FormData();
-  fd.append('file',file);
-  fd.append('upload_preset',UPLOAD_PRESET);
-  var r=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload',{method:'POST',body:fd});
-  if(!r.ok) throw new Error('Upload failed ('+r.status+')');
-  var d=await r.json();
-  return d.public_id;
-}
-
 // Load photos from Firestore (or localStorage fallback)
 function loadPhotos(){
+  loadCustomAlbums();
+  rebuildAlbumSelect();
   if(db){
+    // also load custom albums from Firestore
+    db.collection('config').doc('albums').get().then(function(doc){
+      if(doc.exists&&doc.data().custom){
+        var remote=doc.data().custom;
+        GCH=GCH_BUILTIN.slice();
+        remote.forEach(function(c){GCH.push(c)});
+        saveData('gcustom',remote);
+        rebuildAlbumSelect();
+      }
+    }).catch(function(){});
     fbUnsub.photos=db.collection('photos').orderBy('date','desc').onSnapshot(function(snap){
       gphotos=[];
       snap.forEach(function(doc){var d=doc.data();d.id=doc.id;gphotos.push(d)});
@@ -1165,47 +1259,161 @@ async function delPhoto(p){
   return true;
 }
 
+// Move photo to a different album
+async function movePhotoToAlbum(p, newAlbum, silent){
+  if(!silent && !confirm('Move "'+esc(p.cap||'this photo')+'" to "'+gChLabel(newAlbum)+'"?'))return;
+  p.ch=newAlbum;
+  if(db){
+    await db.collection('photos').doc(p.id).update({ch:newAlbum});
+  } else {
+    saveData('gphotos',gphotos);
+  }
+}
+
 // favorites
 function gBurst(x,y,n){for(var i=0;i<(n||8);i++){var s=document.createElement('span');s.className='burst';s.textContent='♥';s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',(Math.random()*160-80)+'px');s.style.setProperty('--dy',(-40-Math.random()*120)+'px');document.body.appendChild(s);setTimeout(function(e){e.remove()},1000,s)}}
 function gTog(id,x,y){var i=gfavs.indexOf(id);if(i>-1)gfavs.splice(i,1);else{gfavs.push(id);gBurst(x,y,10)}saveData('gfavs',gfavs)}
 
-// chips
-function gChips(){
-  var h='<button class="gchip'+(gfilt==='all'?' on':'')+'" data-f="all">All</button>'+GCH.map(function(c){return '<button class="gchip'+(gfilt===c[0]?' on':'')+'" data-f="'+c[0]+'">'+c[1]+'</button>'}).join('')+'<button class="gchip'+(gfilt==='fav'?' on':'')+'" data-f="fav">♥ Favourites</button>';
-  $('gchips').innerHTML=h;$('gchips').querySelectorAll('button').forEach(function(b){b.onclick=function(){gfilt=b.dataset.f;gRend()}})
+// --- Move modal ---
+var gMovePhoto=null;
+function openMoveModal(p){
+  gMovePhoto=p;
+  var list=$('gmove-list');list.innerHTML='';
+  GCH.forEach(function(c){
+    var btn=document.createElement('button');
+    btn.className='gm-alb-btn'+(p.ch===c[0]?' current':'');
+    btn.textContent=(p.ch===c[0]?'✓ ':'')+c[1]+(p.ch===c[0]?' (current)':'');
+    if(p.ch!==c[0]){
+      btn.onclick=async function(){
+        closeMoveModal();
+        await movePhotoToAlbum(p,c[0],true);
+        gRend();
+      };
+    }
+    list.appendChild(btn);
+  });
+  $('gmove-modal').classList.add('show');
+}
+function closeMoveModal(){$('gmove-modal').classList.remove('show');gMovePhoto=null;}
+$('gmove-cancel').onclick=closeMoveModal;
+$('gmove-modal').onclick=function(e){if(e.target===$('gmove-modal'))closeMoveModal()};
+
+// --- Main render ---
+function gList(albumKey){
+  if(albumKey==='fav')return gphotos.filter(function(p){return gfavs.indexOf(p.id)>-1});
+  return gphotos.filter(function(p){return p.ch===albumKey});
 }
 
-function gList(){return gphotos.filter(function(p){return gfilt==='all'||(gfilt==='fav'?gfavs.indexOf(p.id)>-1:p.ch===gfilt)})}
 var gz=10;
 
 function gRend(){
-  gChips();var L=gList(),S=$('gstage');S.innerHTML='';
   $('gcount').textContent=gphotos.length;
-  if(!L.length){S.className='';S.innerHTML='<div class="gempty">No photos here yet 💗<br>Add your first one above.</div>';return}
-  gview==='table'?gTable(L,S):gHeart(L,S)
+  var container=$('galbums');
+  // Remember which albums are open
+  var openState={};
+  container.querySelectorAll('.album-section').forEach(function(d){
+    openState[d.dataset.key]=d.open;
+  });
+  container.innerHTML='';
+
+  // Favourites album (virtual)
+  var favs=gphotos.filter(function(p){return gfavs.indexOf(p.id)>-1});
+  if(favs.length){
+    var wasOpen=openState['fav'];
+    var d=renderAlbumSection('fav','♥ Favourites',favs,wasOpen===undefined?false:wasOpen,true);
+    container.appendChild(d);
+  }
+
+  // Real albums
+  GCH.forEach(function(c){
+    var L=gphotos.filter(function(p){return p.ch===c[0]});
+    var wasOpen=openState[c[0]];
+    var isBuiltin=GCH_BUILTIN.some(function(b){return b[0]===c[0]});
+    var d=renderAlbumSection(c[0],c[1],L,wasOpen===undefined?false:wasOpen,isBuiltin);
+    container.appendChild(d);
+  });
 }
 
-function gTable(L,S){
-  S.className='table';var W=S.clientWidth,w=Math.min(200,W/2-14),cols=Math.max(2,Math.floor(W/(w+10))),h=w*1.25,gx=(W-cols*w)/(cols+1);
-  S.style.setProperty('--w',w+'px');S.style.height=(Math.ceil(L.length/cols)*(h+26)+40)+'px';
+function renderAlbumSection(key, label, photos, isOpen, isBuiltin){
+  var details=document.createElement('details');
+  details.className='album-section';
+  details.dataset.key=key;
+  if(isOpen)details.open=true;
+
+  var sum=document.createElement('summary');
+  sum.innerHTML='<span>'+label+'</span><span class="alb-chip">'+photos.length+'</span>';
+
+  if(!isBuiltin && key!=='fav'){
+    var del=document.createElement('button');
+    del.className='alb-del';del.textContent='🗑';del.title='Delete album';
+    del.onclick=function(e){e.preventDefault();e.stopPropagation();deleteAlbum(key)};
+    sum.appendChild(del);
+  }
+  details.appendChild(sum);
+
+  var body=document.createElement('div');body.className='album-body';
+
+  if(!photos.length){
+    body.innerHTML='<div class="gempty">No photos here yet 💗</div>';
+  } else {
+    var stage=document.createElement('div');
+    stage.id='gstage-'+key;
+    stage.dataset.key=key;
+    stage.style.position='relative';
+    body.appendChild(stage);
+
+    function renderStage(){
+      stage.innerHTML='';
+      if(gview==='table') gTable(photos,stage,key);
+      else gHeart(photos,stage);
+    }
+
+    // Render when the album is opened (so clientWidth is real)
+    details.addEventListener('toggle',function(){
+      if(details.open) requestAnimationFrame(renderStage);
+    });
+    // If starting open, render after first paint
+    if(isOpen) requestAnimationFrame(renderStage);
+  }
+  details.appendChild(body);
+  return details;
+}
+
+function gTable(L,S,albumKey){
+  S.className='gtable-grid';
   L.forEach(function(p,i){
-    var d=document.createElement('div');d.className='pol';d.style.animationDelay=(i*70)+'ms';
-    d.style.left=(gx+(i%cols)*(w+gx)+Math.random()*10-5)+'px';d.style.top=(Math.floor(i/cols)*(h+26)+Math.random()*10-5)+'px';
-    var rot=Math.random()*10-5;d.style.transform='rotate('+rot+'deg)';
     var fav=gfavs.indexOf(p.id)>-1;
-    d.innerHTML='<div class="in"><div class="f"><img src="'+cThumb(p.publicId)+'" alt="" loading="lazy"><p>'+esc(p.cap||'♥')+'</p></div><div class="b"><b>'+esc(p.cap||'Us')+'</b><small>'+esc(gChLabel(p.ch))+' · '+gFmt(p.date)+'</small><button data-a="h">'+(fav?'♥':'♡')+' Love</button><button data-a="o">Open</button><button data-a="d" style="background:#9a6577">🗑 Remove</button></div></div>';
-    var sx,sy,ox,oy,mv=false,dn=false;
-    d.onpointerdown=function(e){if(e.target.tagName==='BUTTON')return;dn=true;mv=false;sx=e.clientX;sy=e.clientY;ox=d.offsetLeft;oy=d.offsetTop;d.setPointerCapture(e.pointerId);d.style.zIndex=++gz};
-    d.onpointermove=function(e){if(!dn)return;var dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>6)mv=true;if(mv){d.style.left=ox+dx+'px';d.style.top=oy+dy+'px';d.style.transform='rotate('+rot+'deg) scale(1.05)'}};
-    d.onpointerup=function(){if(!dn)return;dn=false;d.style.transform='rotate('+rot+'deg)';if(!mv)d.classList.toggle('flip')};
-    d.ondblclick=function(e){gTog(p.id,e.clientX,e.clientY);gRend()};
-    d.onclick=function(e){var a=e.target.dataset&&e.target.dataset.a;if(a==='h'){gTog(p.id,e.clientX,e.clientY);e.target.textContent=(gfavs.indexOf(p.id)>-1?'♥':'♡')+' Love'}if(a==='o')openOv(L.indexOf(p),false);if(a==='d')delPhoto(p).then(function(ok){if(ok)gRend()})};
-    S.appendChild(d)
-  })
+    var card=document.createElement('div');
+    card.className='gtile';
+    card.style.animationDelay=(i*50)+'ms';
+    card.innerHTML=
+      '<img src="'+cThumb(p.publicId)+'" alt="" loading="lazy">'
+      +'<div class="gtile-info">'
+      +  '<span class="gtile-cap">'+esc(p.cap||'♥')+'</span>'
+      +  '<span class="gtile-alb">'+esc(gChLabel(p.ch))+'</span>'
+      +'</div>'
+      +'<div class="gtile-actions">'
+      +  '<button data-a="h" title="Favourite">'+(fav?'♥':'♡')+'</button>'
+      +  '<button data-a="o" title="Open">⛶</button>'
+      +  '<button data-a="m" title="Move">📂</button>'
+      +  '<button data-a="d" title="Remove" class="gtile-del">🗑</button>'
+      +'</div>';
+    card.onclick=function(e){
+      var a=e.target.dataset&&e.target.dataset.a;
+      if(a==='h'){gTog(p.id,e.clientX,e.clientY);e.target.textContent=gfavs.indexOf(p.id)>-1?'♥':'♡';}
+      if(a==='o'){gfilt=albumKey||'all';openOv(L.indexOf(p),false);}
+      if(a==='m'){openMoveModal(p);}
+      if(a==='d'){delPhoto(p).then(function(ok){if(ok)gRend();});}
+    };
+    S.appendChild(card);
+  });
 }
 
 function gHeart(L,S){
-  S.className='heart';var W=Math.min(S.parentNode.clientWidth,640);S.style.width=W+'px';S.style.height=(W*.95)+'px';
+  S.className='heart';
+  S.style.position='relative';
+  var W=Math.min((S.parentNode.offsetWidth||document.querySelector('main').offsetWidth||320),640);
+  S.style.width=W+'px';S.style.height=(W*.95)+'px';
   var n=L.length,n0=n>6?Math.ceil(n*.65):n,sz=Math.max(46,Math.min(110,W/(n>14?7.5:5.5))),k=W/36;
   L.forEach(function(p,i){
     var ring=i<n0,m=ring?i:i-n0,c=ring?n0:n-n0,t=(m/c)*Math.PI*2+(ring?0:.3),sc=ring?1:.5;
@@ -1216,29 +1424,32 @@ function gHeart(L,S){
   })
 }
 
-// overlay / story
-function show(){var L=gList();if(!L.length)return;gidx=(gidx+L.length)%L.length;var p=L[gidx],im=$('oimg');
+// overlay / story — works across all photos (gfilt controls which set is used)
+function gListFiltered(){
+  if(gfilt==='fav')return gphotos.filter(function(p){return gfavs.indexOf(p.id)>-1});
+  if(gfilt==='all')return gphotos;
+  return gphotos.filter(function(p){return p.ch===gfilt});
+}
+function show(){var L=gListFiltered();if(!L.length)return;gidx=(gidx+L.length)%L.length;var p=L[gidx],im=$('oimg');
 im.style.animation='none';void im.offsetWidth;im.style.animation='';im.src=cFull(p.publicId);$('obg').style.backgroundImage='url('+cThumb(p.publicId)+')';
 $('ocap').textContent=(p.cap?p.cap+' · ':'')+gChLabel(p.ch)+' · '+gFmt(p.date);$('ocount').textContent=(gidx+1)+' / '+L.length;$('oheart').textContent=gfavs.indexOf(p.id)>-1?'♥':'♡'}
 function play(on){gplaying=on;clearInterval(gtimer);$('oplay').textContent=on?'⏸':'▶ Play';if(on)gtimer=setInterval(function(){gidx++;show()},5500)}
 function openOv(i,pl){gidx=i;$('ov').classList.add('show');show();play(pl)}
 function closeOv(){$('ov').classList.remove('show');play(false)}
 $('on').onclick=function(){gidx++;show()};$('op').onclick=function(){gidx--;show()};$('oplay').onclick=function(){play(!gplaying)};$('ox').onclick=closeOv;
-$('odel').onclick=function(){var L=gList();if(!L.length)return;var was=gplaying;play(false);delPhoto(L[gidx]).then(function(ok){if(!ok){play(was);return}gRend();if(!gList().length)closeOv();else show()})};
-$('oheart').onclick=function(e){var L=gList();gTog(L[gidx].id,e.clientX,e.clientY);show()};
+$('odel').onclick=function(){var L=gListFiltered();if(!L.length)return;var was=gplaying;play(false);delPhoto(L[gidx]).then(function(ok){if(!ok){play(was);return}gRend();if(!gListFiltered().length)closeOv();else show()})};
+$('oheart').onclick=function(e){var L=gListFiltered();gTog(L[gidx].id,e.clientX,e.clientY);show()};
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
-    // gallery takes priority — only close moment overlay if gallery is not open
+    if($('gmove-modal').classList.contains('show')){closeMoveModal();return}
     if($('ov').classList.contains('show')){ closeOv(); return; }
     if($('mov').classList.contains('show')){ closeMov(); return; }
   }
-  // gallery arrow keys
   if($('ov').classList.contains('show')){
     if(e.key==='ArrowRight'){gidx++;show()}
     if(e.key==='ArrowLeft'){gidx--;show()}
     return;
   }
-  // moment overlay arrow keys
   if($('mov').classList.contains('show')){
     if(e.key==='ArrowRight'){movIdx++;movShow();}
     if(e.key==='ArrowLeft'){movIdx--;movShow();}
@@ -1250,8 +1461,15 @@ $('ov').addEventListener('touchend',function(e){var d=e.changedTouches[0].client
 // view toggles
 $('gvt').onclick=function(){gview='table';$('gvt').classList.add('on');$('gvh').classList.remove('on');gRend()};
 $('gvh').onclick=function(){gview='heart';$('gvh').classList.add('on');$('gvt').classList.remove('on');gRend()};
-$('gvs').onclick=function(){if(gList().length)openOv(0,true)};
-$('gvr').onclick=function(e){var L=gList();if(!L.length)return;gBurst(e.clientX,e.clientY,14);openOv(Math.floor(Math.random()*L.length),false)};
+$('gvr').onclick=function(e){if(!gphotos.length)return;gfilt='all';gBurst(e.clientX,e.clientY,14);openOv(Math.floor(Math.random()*gphotos.length),false)};
+
+// new album creation
+$('gnewbtn').onclick=function(){
+  var n=$('gnewname').value.trim();
+  if(!n){$('gnewname').focus();return}
+  addAlbum(n);$('gnewname').value='';
+};
+$('gnewname').onkeydown=function(e){if(e.key==='Enter')$('gnewbtn').click()};
 
 // upload handling
 var gqueue=[];
@@ -1268,6 +1486,17 @@ $('ggo').onclick=async function(e){
   }
   $('gst').textContent='All saved ♥';$('gcap').value='';gBurst(x,y,14);
 };
+
+// Upload to Cloudinary (kept here for self-containment)
+async function uploadCloudinary(file){
+  var fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',UPLOAD_PRESET);
+  var r=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload',{method:'POST',body:fd});
+  if(!r.ok) throw new Error('Upload failed ('+r.status+')');
+  var d=await r.json();
+  return d.public_id;
+}
 
 // init gallery
 loadPhotos();
