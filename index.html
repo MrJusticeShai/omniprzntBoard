@@ -188,9 +188,9 @@ small{color:var(--mute)}
 .ps-card-back span{font-size:1.05rem;line-height:1.5;font-style:italic}
 .ps-card-lg{aspect-ratio:4/3}
 .ps-card-lg .ps-card-back{flex-direction:column;gap:0;padding:16px}
-.lg-option{flex:1;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.92rem;font-weight:600;padding:10px;border-radius:12px;cursor:pointer;transition:background .2s;line-height:1.4}
+.lg-option{flex:1;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.92rem;font-weight:600;padding:10px;border-radius:12px;cursor:pointer;transition:background .2s;line-height:1.4;border:2px solid var(--soft);background:var(--bg);color:var(--ink);font-family:inherit}
 .lg-option:hover{background:var(--soft)}
-.lg-option.picked{background:var(--accent);color:#fff}
+.lg-option.picked{background:var(--accent);color:#fff;border-color:var(--accent)}
 .lg-or{font-size:.75rem;font-weight:bold;color:var(--mute);text-transform:uppercase;letter-spacing:.1em;padding:4px 0;flex-shrink:0}
 .ps-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
 .ps-actions button{font:inherit;border-radius:999px;background:var(--accent);color:#fff;border:0;padding:9px 20px;cursor:pointer;transition:transform .15s}
@@ -203,6 +203,10 @@ small{color:var(--mute)}
 .ps-score-vs{font-size:.85rem;color:var(--mute);font-weight:bold}
 .ps-winner{text-align:center;font-size:1.1rem;font-weight:bold;color:var(--accent);min-height:1.6em;margin:6px 0}
 .ps-divider{border:none;border-top:2px dashed var(--soft);margin:20px 0}
+.ps-reveal-btn{margin-top:10px;font:inherit;font-size:.82rem;padding:7px 20px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.18);color:#fff;cursor:pointer;transition:background .15s}
+.ps-reveal-btn:hover{background:rgba(255,255,255,.32)}
+.ps-reveal-back{border-color:var(--soft);background:var(--bg);color:var(--mute)}
+.ps-reveal-back:hover{background:var(--soft)}
 
 /* ===== Music player ===== */
 #music-bar{position:fixed;bottom:14px;left:14px;z-index:20;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);font-family:inherit;font-size:.78rem;color:var(--mute);max-width:calc(100vw - 140px)}
@@ -341,10 +345,17 @@ small{color:var(--mute)}
     <button class="ps-tab" id="td-tab-dare" onclick="tdSwitch('dare')">🔥 Dare</button>
   </div>
   <div class="ps-card-wrap">
-    <div class="ps-card" id="td-card" onclick="tdFlip()">
+    <div class="ps-card" id="td-card">
       <div class="ps-card-inner">
-        <div class="ps-card-front"><span id="td-front-label">🤔 Truth</span><small>Tap to reveal</small></div>
-        <div class="ps-card-back"><span id="td-text"></span></div>
+        <div class="ps-card-front">
+          <span id="td-front-label">🤔 Truth</span>
+          <small>Tap to reveal</small>
+          <button class="ps-reveal-btn" onclick="tdFlip()">Reveal</button>
+        </div>
+        <div class="ps-card-back">
+          <span id="td-text"></span>
+          <button class="ps-reveal-btn ps-reveal-back" onclick="tdFlip()">Flip back</button>
+        </div>
       </div>
     </div>
   </div>
@@ -355,28 +366,27 @@ small{color:var(--mute)}
 
   <div class="ps-divider"></div>
 
-  <!-- Lovers Game -->
-  <div class="ps-heading">Lovers Game <small style="font-size:.75rem;font-weight:400;color:var(--mute)">— Would You Rather</small></div>
-  <div class="ps-sub">Each pick a side. First to 5 wins 💘</div>
+  <!-- Would You Rather -->
+  <div class="ps-heading">Would You Rather</div>
+  <div class="ps-sub">Reveal a scenario — each of you pick a side. First to 10 wins 💘</div>
   <div class="ps-scores">
-    <div class="ps-score-box">
-      <span id="lg-score-a">0</span>
-      <label>Her</label>
-    </div>
+    <div class="ps-score-box"><span id="lg-score-a">0</span><label>Her</label></div>
     <div class="ps-score-vs">vs</div>
-    <div class="ps-score-box">
-      <span id="lg-score-b">0</span>
-      <label>Him</label>
-    </div>
+    <div class="ps-score-box"><span id="lg-score-b">0</span><label>Him</label></div>
   </div>
   <div class="ps-card-wrap">
-    <div class="ps-card ps-card-lg" id="lg-card" onclick="lgFlip()">
+    <div class="ps-card ps-card-lg" id="lg-card">
       <div class="ps-card-inner">
-        <div class="ps-card-front"><span>💘 Lovers Game</span><small>Tap to reveal</small></div>
+        <div class="ps-card-front">
+          <span>💘 Would You Rather</span>
+          <small>Tap to reveal</small>
+          <button class="ps-reveal-btn" onclick="lgFlip()">Reveal</button>
+        </div>
         <div class="ps-card-back">
-          <div class="lg-option" id="lg-opt-a" onclick="lgPick(event,'a')"></div>
+          <button class="lg-option" id="lg-opt-a" onclick="lgPick(event,'a')"></button>
           <div class="lg-or">or</div>
-          <div class="lg-option" id="lg-opt-b" onclick="lgPick(event,'b')"></div>
+          <button class="lg-option" id="lg-opt-b" onclick="lgPick(event,'b')"></button>
+          <button class="ps-reveal-btn ps-reveal-back" onclick="lgFlip()">Flip back</button>
         </div>
       </div>
     </div>
@@ -385,6 +395,39 @@ small{color:var(--mute)}
   <div class="ps-actions">
     <button onclick="lgNext()">Next round ♥</button>
     <button class="ps-sec" onclick="lgReset()">Reset scores</button>
+  </div>
+
+  <div class="ps-divider"></div>
+
+  <!-- This or That -->
+  <div class="ps-heading">This or That</div>
+  <div class="ps-sub">Quick fire — no thinking, just pick. See how well you match 💫</div>
+  <div class="ps-scores">
+    <div class="ps-score-box"><span id="tt-score-a">0</span><label>Her</label></div>
+    <div class="ps-score-vs">matches</div>
+    <div class="ps-score-box"><span id="tt-score-b">0</span><label>Him</label></div>
+  </div>
+  <div class="ps-card-wrap">
+    <div class="ps-card ps-card-lg" id="tt-card">
+      <div class="ps-card-inner">
+        <div class="ps-card-front">
+          <span>💫 This or That</span>
+          <small>Tap to reveal</small>
+          <button class="ps-reveal-btn" onclick="ttFlip()">Reveal</button>
+        </div>
+        <div class="ps-card-back">
+          <button class="lg-option" id="tt-opt-a" onclick="ttPick(event,'a')"></button>
+          <div class="lg-or">or</div>
+          <button class="lg-option" id="tt-opt-b" onclick="ttPick(event,'b')"></button>
+          <button class="ps-reveal-btn ps-reveal-back" onclick="ttFlip()">Flip back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="tt-match" class="ps-winner"></div>
+  <div class="ps-actions">
+    <button onclick="ttNext()">Next ♥</button>
+    <button class="ps-sec" onclick="ttReset()">Reset</button>
   </div>
 
 </div></details>
@@ -1155,7 +1198,7 @@ function manualSync(){
 
 // ===== PLAY SPACE =====
 
-// --- Truth or Dare decks ---
+// --- Truth deck (100) ---
 var TD_TRUTH = [
   "What's something you've never told me?",
   "What's your biggest insecurity in this relationship?",
@@ -1171,9 +1214,95 @@ var TD_TRUTH = [
   "When did you first realise you had feelings for me?",
   "What's one thing you want us to do more of?",
   "What's something silly that makes you think of me?",
-  "What would your ideal day with me look like?"
+  "What would your ideal day with me look like?",
+  "What's one thing you've never forgiven yourself for?",
+  "What do you think is your best quality?",
+  "What's your biggest fear about the future?",
+  "What's something you're still figuring out about yourself?",
+  "What's one habit you have that you think I don't know about?",
+  "What would you do if you found out I lied to you?",
+  "What's something you've always wanted to ask me but haven't?",
+  "What does love feel like to you in your body?",
+  "What's the one thing that could make you walk away from a relationship?",
+  "What's something you're secretly proud of?",
+  "What's one moment in your life you wish you could relive?",
+  "What's one thing you would never compromise on in a relationship?",
+  "What's the last thing that made you cry?",
+  "What's your biggest regret so far?",
+  "What's something you appreciate about me that you've never said out loud?",
+  "What do you think I find most attractive about you?",
+  "What would you change about the way you were raised?",
+  "What's one thing that always cheers you up no matter what?",
+  "What's one thing that always brings you down?",
+  "What does your ideal future look like in five years?",
+  "What's the kindest thing anyone has ever done for you?",
+  "What's one thing you believe that most people disagree with?",
+  "What's one thing you've always wanted to try but been too scared to?",
+  "What's your love story deal-breaker?",
+  "What's one childhood memory that shaped who you are?",
+  "How do you know when you're falling in love?",
+  "What's something about me that surprised you?",
+  "What's a promise you made to yourself that you've kept?",
+  "What do you value more — honesty or kindness?",
+  "What's one thing you do when no one is watching?",
+  "What's the last compliment that really meant something to you?",
+  "What's one thing you've outgrown?",
+  "What's something you used to believe that you no longer do?",
+  "What does safety feel like to you in a relationship?",
+  "What's one thing you want me to know about how you feel right now?",
+  "What's your biggest pet peeve in a relationship?",
+  "What do you think makes us work?",
+  "What's one thing you do when you're upset that you wish you didn't?",
+  "What's the last time you felt truly seen by someone?",
+  "What's your definition of a perfect relationship?",
+  "What do you think I misunderstand about you?",
+  "What's something you've never told anyone?",
+  "What's one thing that always makes you feel better after a bad day?",
+  "What's your biggest strength that I might not have noticed yet?",
+  "What's one moment that changed how you see yourself?",
+  "What do you need more of from me?",
+  "What do you need less of from me?",
+  "What's one thing that you think would bring us even closer?",
+  "What scares you most about being vulnerable?",
+  "What's one goal you have that feels too big to say out loud?",
+  "What's something you admire in other couples?",
+  "What's one thing that makes you feel disconnected from me?",
+  "What's one thing you've never done but want to do with me?",
+  "What do you think love looks like at its best?",
+  "What's something you're working on within yourself right now?",
+  "What do you think happens when we stop growing together?",
+  "What's one thing you do just for you that brings you joy?",
+  "What's one conversation you've been avoiding?",
+  "What's your favourite thing about how I love you?",
+  "What would you do differently if you could start our relationship over?",
+  "What's something beautiful you notice about everyday life?",
+  "What's one rule you have for yourself in relationships?",
+  "What's the one thing that always reminds you why you chose me?",
+  "What do you think is the secret to a long, happy relationship?",
+  "What's something that frustrates you but you laugh about later?",
+  "What's one value you hope our relationship is built on?",
+  "What's something you've learned about love from your parents?",
+  "What's one thing you would want me to fight for in this relationship?",
+  "What do you think about when you can't sleep?",
+  "What's your version of home?",
+  "What's one thing you're grateful for today?",
+  "What's one thing you've never properly thanked someone for?",
+  "What do you think I deserve more of?",
+  "What's one moment this week that made you think of me?",
+  "What do you think loyalty means in a relationship?",
+  "What's one thing that always makes you feel safe?",
+  "What's your biggest romantic regret?",
+  "What's one way you show love that people might not notice?",
+  "What's one thing you need to feel respected in a relationship?",
+  "What do you do when you're trying to process something hard?",
+  "What's one thing that makes you feel truly alive?",
+  "What would you want someone to say about you at your 70th birthday?",
+  "What's one thing you believe about us that keeps you going?",
+  "What's one thing you wish came more naturally to you?",
+  "What's your favourite version of us — which moment, which place?"
 ];
 
+// --- Dare deck (100) ---
 var TD_DARE = [
   "Send me a voice note saying one thing you love about me — right now.",
   "Do your best impression of me.",
@@ -1184,65 +1313,105 @@ var TD_DARE = [
   "Tell me something kind you've thought about me but never said.",
   "Act out how you felt the first time we spoke.",
   "Name five things about me you're genuinely grateful for.",
-  "Screenshot your most-used emoji and explain why it fits us.",
   "Describe our relationship using only three words.",
   "Do something that you know makes me smile.",
   "Tell me a secret — something small I don't know about you.",
   "Show me your lockscreen and explain why you chose it.",
-  "Say 'I love you' in three different languages."
+  "Say 'I love you' in three different languages.",
+  "Re-enact the first conversation we ever had.",
+  "Without using your hands, show me how excited you are about us.",
+  "Let me style your hair however I want for the next 10 minutes.",
+  "Text someone right now and tell them one good thing about me.",
+  "Make up a 30-second song about us on the spot.",
+  "Demonstrate exactly how you'd propose.",
+  "Share the most embarrassing photo of yourself you have.",
+  "Talk to me for one full minute about one of your flaws.",
+  "Write my name on something in a creative way right now.",
+  "Tell me one thing you'd change about yourself for us.",
+  "Let me ask you any three questions and you answer honestly.",
+  "Give me your best movie-style romantic speech.",
+  "Name every place we've been together without stopping.",
+  "Stare into my eyes without laughing for 30 seconds.",
+  "Call someone and tell them you're with the most amazing person.",
+  "Let me see your most recent search history.",
+  "Walk around the room like you're walking the red carpet — I narrate.",
+  "Do an impression of how you think I act when I'm annoyed.",
+  "Write my name on paper with your non-dominant hand.",
+  "Tell me one thing you secretly find adorable about me.",
+  "Snap your best outfit selfie right now and send it to me.",
+  "Act out your favourite memory of us.",
+  "Let me smell your phone — no deleting anything first.",
+  "Tell me what you were doing the moment you realised you liked me.",
+  "Give me a compliment for every letter in my name.",
+  "Take a selfie together and make it your wallpaper for 24 hours.",
+  "Pretend I'm meeting your family for the first time — introduce me.",
+  "Do ten seconds of your best dance move.",
+  "Tell me three things you notice about me that most people miss.",
+  "Whisper something sweet to me.",
+  "List five things you'd put in a time capsule for us.",
+  "Name ten things that make me unique.",
+  "Act out what you think I do when I'm alone.",
+  "Tell me one thing you'd do differently on our first date.",
+  "Do your best impression of a movie couple — pick the scene.",
+  "Pretend to sell me to someone as the world's greatest partner.",
+  "Tell me one thing that always makes you think about the future of us.",
+  "Show me your emoji keyboard and tell me which five describe me.",
+  "Make a playlist of five songs that are 'us' — right now.",
+  "Tell me one thing you admire about how I love you.",
+  "Re-enact the moment you fell for me — your version.",
+  "Let me read your most recent sent message.",
+  "Write a small note to future us and read it out loud.",
+  "Do something thoughtful for me in the next 60 seconds.",
+  "Tell me what your parents would say about me if they were honest.",
+  "Name something you'd do for me that you've never done for anyone else.",
+  "Tell me what you think my biggest strength is.",
+  "Act out your version of our best night together.",
+  "Let me pick a word and you have to describe our relationship using it.",
+  "Tell me one goal you have for us in the next year.",
+  "Pick a song and dance with me right now — proper slow dance.",
+  "Tell me one moment when you were really proud of me.",
+  "Look me in the eyes and say the first honest thing that comes to mind.",
+  "Show me how you'd comfort me if I had the worst day of my life.",
+  "Let me give you a new nickname — you have to use it today.",
+  "Tell me the most thoughtful thing you could do for me right now.",
+  "Act out your version of a future argument and how we'd resolve it.",
+  "Tell me something you think I'm better at than I think I am.",
+  "Name three things you would fight for in our relationship.",
+  "Without looking at your phone, recite my number.",
+  "Tell me the one thing you hope never changes between us.",
+  "Let me pick a random contact on your phone — tell me one story about them.",
+  "Tell me what your face looked like the last time I surprised you.",
+  "Make up a promise you're going to keep — right now.",
+  "Tell me one thing you'd want me to teach you.",
+  "Tell me one thing you'd want to teach me.",
+  "Let me keep one thing from your bag as a memento for the day.",
+  "Tell me what a lazy Sunday with me looks like in your ideal world.",
+  "Name every country you want to visit with me.",
+  "Tell me what you think our story would look like as a movie.",
+  "Pick a random emoji and explain how it represents our relationship.",
+  "Tell me one moment in the last week when you felt loved by me.",
+  "Let me read the last paragraph of a book you love to you.",
+  "Act out how you'd tell someone about me for the first time.",
+  "Tell me one honest thing you appreciate about how we fight.",
+  "Show me how you'd greet me if we hadn't seen each other in a month.",
+  "Tell me one thing you want us to build together.",
+  "Name five things that would be in our ideal home.",
+  "Tell me what song you'd play at our wedding.",
+  "Let me draw something on your hand — you don't get to see until it's done.",
+  "Tell me one thing you want our relationship to be known for.",
+  "Act out the moment you'd tell your best friend you're in love with me.",
+  "Tell me one thing you're afraid to need from me.",
+  "Name one way you want to grow as a partner.",
+  "Tell me the most romantic thing you've ever genuinely felt.",
+  "Say one thing to me that you've been meaning to say for a while."
 ];
 
-var tdMode = 'truth';
-var tdDeck = TD_TRUTH.slice();
-var tdIdx  = 0;
-
-function tdShuffle() {
-  tdDeck = (tdMode === 'truth' ? TD_TRUTH : TD_DARE).slice();
-  for (var i = tdDeck.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = tdDeck[i]; tdDeck[i] = tdDeck[j]; tdDeck[j] = t;
-  }
-  tdIdx = 0;
-  var card = $('td-card');
-  if (card.classList.contains('flipped')) card.classList.remove('flipped');
-}
-
-function tdSwitch(mode) {
-  tdMode = mode;
-  $('td-tab-truth').classList.toggle('active', mode === 'truth');
-  $('td-tab-dare').classList.toggle('active', mode === 'dare');
-  $('td-front-label').textContent = mode === 'truth' ? '🤔 Truth' : '🔥 Dare';
-  var card = $('td-card');
-  if (card.classList.contains('flipped')) card.classList.remove('flipped');
-  tdShuffle();
-}
-
-function tdFlip() {
-  var card = $('td-card');
-  if (!card.classList.contains('flipped')) {
-    $('td-text').textContent = tdDeck[tdIdx % tdDeck.length];
-    card.classList.add('flipped');
-  } else {
-    card.classList.remove('flipped');
-  }
-}
-
-function tdNext() {
-  var card = $('td-card');
-  card.classList.remove('flipped');
-  tdIdx = (tdIdx + 1) % tdDeck.length;
-  setTimeout(function(){ $('td-text').textContent = tdDeck[tdIdx]; }, 320);
-}
-
-// init Truth or Dare
-tdShuffle();
-
-// --- Lovers Game (Would You Rather) ---
+// --- Would You Rather deck (100) ---
 var LG_CARDS = [
   ["Stay in with candles & a movie","Go out dancing all night"],
   ["Breakfast in bed every Sunday","Spontaneous midnight drives"],
   ["Write each other love letters","Record voice messages instead"],
-  ["Travel somewhere new together","Perfect the same cosy spot forever"],
+  ["Travel somewhere new every year","Perfect the same cosy spot forever"],
   ["Cook a meal together at home","Dress up for a restaurant date"],
   ["Start a business together","Travel the world for a year"],
   ["Have one big romantic gesture a year","Small sweet surprises every week"],
@@ -1253,82 +1422,292 @@ var LG_CARDS = [
   ["Laugh every single day","Have one deep conversation a week"],
   ["Live in a tiny flat in a big city","A big house somewhere quiet"],
   ["Always be honest even if it hurts","Protect each other's feelings first"],
-  ["Be each other's best friend","Be each other's greatest adventure"]
+  ["Be each other's best friend","Be each other's greatest adventure"],
+  ["Wake up early and watch the sunrise together","Stay up late under the stars"],
+  ["Have a pet dog together","Have a pet cat together"],
+  ["Know the future of our relationship","Be surprised by every moment"],
+  ["Have date nights every week","Have spontaneous adventures whenever"],
+  ["Go on a road trip with no plan","Book every detail in advance"],
+  ["Live abroad for a year","Stay close to family"],
+  ["Have a big wedding","Elope somewhere beautiful"],
+  ["Share everything about your day","Keep some mystery between us"],
+  ["Have the same friend group","Keep separate circles and merge sometimes"],
+  ["Work together every day","Only see each other outside of work"],
+  ["Buy a home together early","Rent and explore different places first"],
+  ["Cook at home every night","Try a new restaurant every week"],
+  ["Have weekends completely free","Plan every weekend in advance"],
+  ["Take a solo trip once a year","Always travel together"],
+  ["Have a love that's calm and steady","Have a love that's passionate and electric"],
+  ["Grow old in one city","Move somewhere new every few years"],
+  ["Know all of each other's secrets","Have some things that stay private"],
+  ["Argue and make up quickly","Never argue but talk everything through"],
+  ["Go to sleep early and wake up energised","Stay up talking and sleep in"],
+  ["Save everything for the future","Spend on experiences now"],
+  ["Have a lot of friends around us","Just the two of us most of the time"],
+  ["Re-read old texts from early on","Start fresh and not look back"],
+  ["Learn a skill together","Teach each other something you each already know"],
+  ["Have a song that's ours","Have a place that's ours"],
+  ["Send good morning texts every day","Surprise each other with random messages"],
+  ["Know exactly what the other needs","Have to figure it out every time"],
+  ["Write vows yourselves","Use traditional vows"],
+  ["Be the one who plans dates","Be surprised by every date"],
+  ["Have a lot of inside jokes","Have deep emotional conversations regularly"],
+  ["Go to the beach","Go to the mountains"],
+  ["Spend the holidays with family","Create your own holiday traditions"],
+  ["Have financial goals you work toward together","Handle money completely independently"],
+  ["Have matching energy levels","Balance each other out — one calm, one energetic"],
+  ["Tell each other everything immediately","Process alone first, then share"],
+  ["Have one enormous dream together","Have many small beautiful goals"],
+  ["Own a business together","Both have separate careers you're proud of"],
+  ["Renew your vows every 10 years","Only say them once and mean them forever"],
+  ["Move in together after 6 months","Take your time and do it when it's right"],
+  ["Have the same love language","Have different ones so you have to learn each other"],
+  ["Spend every anniversary doing something new","Have the same ritual every year"],
+  ["Travel on a tight budget and see more","Spend more and go fewer places in luxury"],
+  ["Have a relationship everyone admires","Have a private relationship only we fully understand"],
+  ["Grow at the same pace","Grow separately and come back stronger"],
+  ["Share all passwords","Have privacy with trust"],
+  ["Say I love you every single day","Show it in actions instead"],
+  ["Have a home full of people and laughter","Have a quiet home just for us"],
+  ["Be the kind of couple that holds hands everywhere","Show love only when it's private"],
+  ["Have deep debates about everything","Agree on the big things and let the rest go"],
+  ["Know each other's families deeply","Keep those relationships separate from yours"],
+  ["Name a star after each other","Plant a tree that grows with your relationship"],
+  ["Never stop dating each other","Settle into comfort and feel completely at home"],
+  ["Have spontaneous chemistry every day","Have built something deeper than excitement"],
+  ["Write your own love story into a book","Make a film of your life together"],
+  ["Have a relationship with no labels","Define every step clearly"],
+  ["Fix problems together as a team","Give each other space to solve things first"],
+  ["Have the kind of love that changes you","Have love that lets you stay exactly who you are"],
+  ["Get matching tattoos","Have something private only you two know about"],
+  ["Cook breakfast for each other on weekends","Order in and stay in bed"],
+  ["Adopt a child together","Have children naturally"],
+  ["Go to therapy together as a couple","Work through things on your own first"],
+  ["Keep a shared journal","Have separate journals and read each other's one day"],
+  ["Spend your first big money on a trip","Spend it on making your home beautiful"],
+  ["Have date nights at home","Always go out for date nights"],
+  ["Text throughout the day","Call once a day properly"],
+  ["Have a shared playlist","Introduce each other to music separately"],
+  ["Own a car together","Always use public transport and walk everywhere"],
+  ["Spend Sunday mornings cooking together","Spend Sunday mornings still in bed"],
+  ["Have the same sense of humour","Have completely different humour that makes you laugh more"],
+  ["Go through hard times and it brings you closer","Have things always be relatively easy"],
+  ["Know each other's dreams completely","Discover new things about each other for years"],
+  ["Take cold showers together on a hot day","Take long hot showers together on a cold day"],
+  ["Share a wardrobe — clothes and style blend","Have completely different personal styles"],
+  ["Celebrate every small win together","Only celebrate the big milestones"],
+  ["Spend time apart and always miss each other","Spend most of your time together and never get tired"],
+  ["Tell each other everything before anyone else","Have one person outside the relationship you both confide in"],
+  ["Grow into better versions of yourselves together","Stay exactly who you were when you fell in love"],
+  ["Have the same favourite place","Discover new favourite places together"],
+  ["Go to bed at the same time every night","Have completely different sleep schedules"],
+  ["Share your biggest fears with each other","Protect each other from worry"],
+  ["Go on a digital detox together for a weekend","Document every moment of your relationship"],
+  ["Spend your birthday just the two of you","Have a big celebration every year"],
+  ["Have someone in our corner no matter what","Earn each other's support with honesty"],
+  ["Choose each other every day consciously","Know it's unconditional and never have to choose"],
+  ["End every day saying one good thing","Start every day with intention together"]
 ];
 
-var lgDeck = LG_CARDS.slice();
-var lgIdx  = 0;
-var lgScoreA = 0;
-var lgScoreB = 0;
-var lgPicked = null;
+// --- This or That deck (150) ---
+var TT_CARDS = [
+  ["Coffee","Tea"],["Morning person","Night owl"],["Beach","Mountains"],
+  ["Dogs","Cats"],["Netflix","Cinema"],["City","Countryside"],
+  ["Hot weather","Cold weather"],["Sweet","Salty"],["Reading","Podcasts"],
+  ["Cook at home","Eat out"],["Early bird","Night owl"],["Introvert","Extrovert"],
+  ["Summer","Winter"],["Texting","Calling"],["Instagram","TikTok"],
+  ["Running","Gym"],["Pizza","Burgers"],["Wine","Cocktails"],
+  ["Road trip","Flight"],["Shower","Bath"],["Books","Movies"],
+  ["Sunrise","Sunset"],["Plan everything","Wing it"],["Big group","Small circle"],
+  ["Window seat","Aisle seat"],["Heels","Sneakers"],["Jeans","Sweats"],
+  ["Pop","Hip hop"],["R&B","Afrobeats"],["Thriller","Romance"],
+  ["Shopping online","Shopping in-store"],["Pool","Ocean"],["Fancy dinner","Casual braai"],
+  ["Action movie","Rom-com"],["Chocolate","Vanilla"],["Chips","Popcorn"],
+  ["Tea in bed","Coffee at a café"],["Walk","Drive"],["Nap","Stay awake"],
+  ["Spicy food","Mild food"],["Old music","New music"],["Journaling","Talking"],
+  ["Spending","Saving"],["Short hair","Long hair"],["Heels","Flats"],
+  ["Diamonds","Gold"],["Photos","Videos"],["Snapchat","WhatsApp"],
+  ["Solo travel","Travel together"],["Fast food","Home cooked"],["Formal","Casual"],
+  ["Whispers","Loud laughs"],["Smart","Funny"],["Loyal","Adventurous"],
+  ["Sunrise hike","Late-night walk"],["Perfume","Natural scent"],["Monogamy","Freedom"],
+  ["Big family","Small family"],["Long hugs","Quick kisses"],["Cuddle","Personal space"],
+  ["Smooth RnB","Hype rap"],["Beyoncé","Rihanna"],["Jordan","Kanye"],
+  ["Cape Town","Joburg"],["Africa","Europe"],["Dubai","New York"],
+  ["Drive with music loud","Drive in silence"],["Heels that hurt","Flats that feel good"],
+  ["Say it","Show it"],["Forgive fast","Process first"],["Lead","Support"],
+  ["Change","Consistency"],["Bold","Understated"],["Planned date","Surprise date"],
+  ["Know the ending","Be surprised"],["Control","Let go"],["Logic","Emotion"],
+  ["Tattoos","No tattoos"],["Short trip","Long holiday"],["Fancy hotel","Airbnb"],
+  ["Carbs","Protein"],["Fruit","Veg"],["Juice","Smoothie"],
+  ["Steak","Chicken"],["Takeout","Delivery"],["Brunch","Dinner"],
+  ["Red wine","White wine"],["Beer","Spirits"],["Party","House gathering"],
+  ["Gym early","Gym late"],["Cardio","Weights"],["Yoga","Pilates"],
+  ["Quiet night in","Night out"],["Dress up","Stay comfortable"],["Bold colours","Neutrals"],
+  ["Minimal makeup","Full glam"],["Natural nails","Nails done"],["Perfume","Body spray"],
+  ["Expensive shoes","Expensive bag"],["Watch","Bracelet"],["Ring","Necklace"],
+  ["Monochrome","Colourful"],["Vintage","Modern"],["Classic","Trendy"],
+  ["Art museum","Science museum"],["Theatre","Concert"],["Festival","Private gig"],
+  ["Thriller novel","Love story"],["Biography","Fiction"],["Audiobook","Physical book"],
+  ["Learn a language","Learn an instrument"],["Chess","Cards"],["Board games","Video games"],
+  ["Cooking class","Dance class"],["Hike","Cycle"],["Swim","Kayak"],
+  ["Sunrise yoga","Evening run"],["Nap on Sunday","Productive Sunday"],["Lazy day","Packed schedule"],
+  ["One close friend","Many acquaintances"],["Go out Friday","Stay in Friday"],["Party starter","Wallflower"],
+  ["Host","Guest"],["Planner","Spontaneous"],["List maker","Just figure it out"],
+  ["Perfectionist","Done is better than perfect"],["Dreamer","Realist"],["Optimist","Realist"],
+  ["Risk taker","Safe and steady"],["Entrepreneur","Career professional"],["Work to live","Love what you do"],
+  ["Fame","Privacy"],["Wealth","Freedom"],["Success","Happiness"],
+  ["Revenge body","Kill them with kindness"],["Block","Ignore"],["Call out","Let it go"],
+  ["Forgive","Move on"],["Apologise first","Wait for them"],["Fight clean","Shut down"],
+  ["Say it in the moment","Sleep on it"],["Express emotions","Keep it in"],["Cry","Vent"],
+  ["Comfort food when sad","Music when sad"],["Phone a friend","Handle it alone"],["Journal","Talk"],
+  ["Hype yourself","Be humble"],["Compliment strangers","Keep it to yourself"],["Gratitude","Ambition"],
+  ["Black coffee","Latte"],["Oats","Eggs"],["Avocado","Banana"],
+  ["Meal prep","Cook fresh daily"],["Cheat day","Stay on track"],["Detox","Balance"],
+  ["Night skincare","Morning skincare"],["Shower at night","Shower in the morning"],["Sleep early","Sleep late"],
+  ["Alarm or no alarm","Natural wake up"],["Nap daily","Power through"],["Phone-free morning","Check it immediately"],
+  ["Candles","LED lights"],["Clean space","Lived-in space"],["Minimalist home","Cosy and full"],
+  ["Pets inside","Pets outside"],["Garden","Balcony"],["Open plan","Separate rooms"]
+];
 
-function lgShuffle() {
-  for (var i = lgDeck.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = lgDeck[i]; lgDeck[i] = lgDeck[j]; lgDeck[j] = t;
-  }
-  lgIdx = 0;
+// shuffle helper
+function psShuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
 }
 
-function lgFlip() {
-  var card = $('lg-card');
-  if (!card.classList.contains('flipped')) {
-    var pair = lgDeck[lgIdx % lgDeck.length];
-    $('lg-opt-a').textContent = pair[0];
-    $('lg-opt-b').textContent = pair[1];
-    $('lg-opt-a').classList.remove('picked');
-    $('lg-opt-b').classList.remove('picked');
-    lgPicked = null;
+// ---- Truth or Dare ----
+var tdMode='truth', tdDeck=psShuffle(TD_TRUTH), tdIdx=0;
+
+function tdShuffle(){
+  tdDeck=psShuffle(tdMode==='truth'?TD_TRUTH:TD_DARE);
+  tdIdx=0;
+  $('td-card').classList.remove('flipped');
+}
+function tdSwitch(mode){
+  tdMode=mode;
+  $('td-tab-truth').classList.toggle('active',mode==='truth');
+  $('td-tab-dare').classList.toggle('active',mode==='dare');
+  $('td-front-label').textContent=mode==='truth'?'🤔 Truth':'🔥 Dare';
+  tdShuffle();
+}
+function tdFlip(){
+  var card=$('td-card');
+  if(!card.classList.contains('flipped')){
+    $('td-text').textContent=tdDeck[tdIdx%tdDeck.length];
     card.classList.add('flipped');
   } else {
     card.classList.remove('flipped');
   }
 }
-
-function lgPick(e, side) {
-  e.stopPropagation();
-  if (lgPicked) return; // already picked this round
-  lgPicked = side;
-  if (side === 'a') {
-    lgScoreA++;
-    $('lg-opt-a').classList.add('picked');
-  } else {
-    lgScoreB++;
-    $('lg-opt-b').classList.add('picked');
-  }
-  $('lg-score-a').textContent = lgScoreA;
-  $('lg-score-b').textContent = lgScoreB;
-  var win = '';
-  if (lgScoreA >= 5) win = '💘 She wins this round!';
-  if (lgScoreB >= 5) win = '💘 He wins this round!';
-  if (lgScoreA >= 5 && lgScoreB >= 5) win = '💘 It\'s a tie — you\'re perfect for each other!';
-  $('lg-winner').textContent = win;
-  if (win) gBurst(window.innerWidth/2, window.innerHeight/2, 18);
+function tdNext(){
+  $('td-card').classList.remove('flipped');
+  tdIdx=(tdIdx+1)%tdDeck.length;
 }
 
-function lgNext() {
-  var card = $('lg-card');
-  card.classList.remove('flipped');
-  lgPicked = null;
-  lgIdx = (lgIdx + 1) % lgDeck.length;
-  $('lg-winner').textContent = '';
-  setTimeout(function(){
+// ---- Would You Rather ----
+var lgDeck=psShuffle(LG_CARDS), lgIdx=0, lgScoreA=0, lgScoreB=0, lgPicked=null;
+
+function lgFlip(){
+  var card=$('lg-card');
+  if(!card.classList.contains('flipped')){
+    var pair=lgDeck[lgIdx%lgDeck.length];
+    $('lg-opt-a').textContent=pair[0];
+    $('lg-opt-b').textContent=pair[1];
     $('lg-opt-a').classList.remove('picked');
     $('lg-opt-b').classList.remove('picked');
-  }, 320);
+    lgPicked=null;
+    card.classList.add('flipped');
+  } else {
+    card.classList.remove('flipped');
+  }
+}
+function lgPick(e,side){
+  e.stopPropagation();
+  if(lgPicked)return;
+  lgPicked=side;
+  if(side==='a'){lgScoreA++;$('lg-opt-a').classList.add('picked');}
+  else{lgScoreB++;$('lg-opt-b').classList.add('picked');}
+  $('lg-score-a').textContent=lgScoreA;
+  $('lg-score-b').textContent=lgScoreB;
+  var win='';
+  if(lgScoreA>=10&&lgScoreB>=10)win='💘 A tie — you\'re perfectly matched!';
+  else if(lgScoreA>=10)win='💘 She wins this round!';
+  else if(lgScoreB>=10)win='💘 He wins this round!';
+  $('lg-winner').textContent=win;
+  if(win)gBurst(window.innerWidth/2,window.innerHeight/2,18);
+}
+function lgNext(){
+  $('lg-card').classList.remove('flipped');
+  lgPicked=null;
+  lgIdx=(lgIdx+1)%lgDeck.length;
+  $('lg-winner').textContent='';
+}
+function lgReset(){
+  lgScoreA=0;lgScoreB=0;lgPicked=null;
+  $('lg-score-a').textContent='0';$('lg-score-b').textContent='0';
+  $('lg-winner').textContent='';
+  $('lg-card').classList.remove('flipped');
+  lgDeck=psShuffle(LG_CARDS);lgIdx=0;
 }
 
-function lgReset() {
-  lgScoreA = 0; lgScoreB = 0; lgPicked = null;
-  $('lg-score-a').textContent = '0';
-  $('lg-score-b').textContent = '0';
-  $('lg-winner').textContent = '';
-  var card = $('lg-card');
-  card.classList.remove('flipped');
-  lgShuffle();
-}
+// ---- This or That ----
+var ttDeck=psShuffle(TT_CARDS), ttIdx=0, ttScoreA=0, ttScoreB=0;
+var ttPickedA=null, ttPickedB=null;
 
-lgShuffle();
+function ttFlip(){
+  var card=$('tt-card');
+  if(!card.classList.contains('flipped')){
+    var pair=ttDeck[ttIdx%ttDeck.length];
+    $('tt-opt-a').textContent=pair[0];
+    $('tt-opt-b').textContent=pair[1];
+    $('tt-opt-a').classList.remove('picked');
+    $('tt-opt-b').classList.remove('picked');
+    ttPickedA=null;ttPickedB=null;
+    $('tt-match').textContent='';
+    card.classList.add('flipped');
+  } else {
+    card.classList.remove('flipped');
+  }
+}
+function ttPick(e,side){
+  e.stopPropagation();
+  // First tap = Her pick, second tap = His pick (or same person picking both for fun)
+  if(!ttPickedA){
+    ttPickedA=side;
+    if(side==='a'){$('tt-opt-a').classList.add('picked');}
+    else{$('tt-opt-b').classList.add('picked');}
+    $('tt-match').textContent='Her: '+ttDeck[ttIdx%ttDeck.length][side==='a'?0:1]+' — now his turn!';
+    return;
+  }
+  if(!ttPickedB){
+    ttPickedB=side;
+    var match=ttPickedA===ttPickedB;
+    if(match){ttScoreA++;ttScoreB++;}
+    $('tt-score-a').textContent=ttScoreA;
+    $('tt-score-b').textContent=ttScoreB;
+    var pair=ttDeck[ttIdx%ttDeck.length];
+    var herPick=pair[ttPickedA==='a'?0:1];
+    var hisPick=pair[ttPickedB==='a'?0:1];
+    $('tt-match').textContent=match
+      ? '✅ Match! You both picked "'+herPick+'" 💘'
+      : '❌ Different! She picked "'+herPick+'" · He picked "'+hisPick+'"';
+    if(match)gBurst(window.innerWidth/2,window.innerHeight/2,10);
+  }
+}
+function ttNext(){
+  $('tt-card').classList.remove('flipped');
+  ttPickedA=null;ttPickedB=null;
+  ttIdx=(ttIdx+1)%ttDeck.length;
+  $('tt-match').textContent='';
+}
+function ttReset(){
+  ttScoreA=0;ttScoreB=0;ttPickedA=null;ttPickedB=null;
+  $('tt-score-a').textContent='0';$('tt-score-b').textContent='0';
+  $('tt-match').textContent='';
+  $('tt-card').classList.remove('flipped');
+  ttDeck=psShuffle(TT_CARDS);ttIdx=0;
+}
 
 // ===== PHOTO GALLERY (Cloudinary + Firestore) =====
 
