@@ -208,6 +208,17 @@ small{color:var(--mute)}
 .ps-reveal-back{border-color:var(--soft);background:var(--bg);color:var(--mute)}
 .ps-reveal-back:hover{background:var(--soft)}
 
+/* ===== Puzzle ===== */
+.pzl-dbtn{font:inherit;border-radius:999px;border:2px solid var(--soft);background:var(--card);color:var(--ink);padding:6px 14px;cursor:pointer;font-size:.82rem}
+.pzl-dbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pzl-sbtn{font:inherit;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.pzl-rbtn{font:inherit;background:none;color:var(--accent);border:2px solid var(--accent);border-radius:999px;padding:10px 20px;cursor:pointer}
+.pzl-piece{position:absolute;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.8))}
+.pzl-piece.snapped{filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
+.pzl-piece canvas{display:block;pointer-events:none}
+#pzl-pick-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:border-color .15s}
+#pzl-pick-grid img:hover{border-color:var(--accent)}
+
 /* ===== Music player ===== */
 #music-bar{position:fixed;bottom:14px;left:14px;z-index:20;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);font-family:inherit;font-size:.78rem;color:var(--mute);max-width:calc(100vw - 140px)}
 #music-toggle{background:none;border:none;font-size:1.1rem;padding:0;cursor:pointer;line-height:1;color:var(--accent);flex-shrink:0}
@@ -431,7 +442,54 @@ small{color:var(--mute)}
   </div>
 
 </div></details>
+
+<details><summary>🧩 Jigsaw Puzzle</summary><div class="body">
+  <p style="font-size:.88rem;color:var(--mute);margin:0 0 10px">Pick a photo from your gallery, choose difficulty, and solve it together 💘</p>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+    <span style="font-size:.88rem;font-weight:600">Difficulty:</span>
+    <button class="pzl-dbtn active" data-cols="3" onclick="pzlSetDiff(this)">Easy 3×3</button>
+    <button class="pzl-dbtn" data-cols="4" onclick="pzlSetDiff(this)">Medium 4×4</button>
+    <button class="pzl-dbtn" data-cols="5" onclick="pzlSetDiff(this)">Hard 5×5</button>
+    <button class="pzl-dbtn" data-cols="6" onclick="pzlSetDiff(this)">Expert 6×6</button>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="pzl-sbtn" onclick="pzlOpenPicker()">🖼 Pick photo &amp; start</button>
+    <button class="pzl-rbtn" id="pzl-resume-btn" style="display:none" onclick="pzlResume()">▶ Resume</button>
+    <button class="pzl-rbtn" id="pzl-new-btn" style="display:none" onclick="pzlNew()">🔄 New game</button>
+  </div>
+  <div id="pzl-thumb" style="margin-top:10px"></div>
+</div></details>
 </main>
+
+<!-- Puzzle picker -->
+<div id="pzl-picker" style="position:fixed;inset:0;z-index:65;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px">
+  <div style="background:var(--card);color:var(--ink);border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:82vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px">
+    <h3 style="margin:0">🧩 Choose a photo</h3>
+    <div id="pzl-pick-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px"></div>
+    <button onclick="document.getElementById('pzl-picker').style.display='none'" style="align-self:flex-end;background:none;border:1px solid var(--soft);border-radius:999px;color:var(--mute);padding:7px 18px;font:inherit;cursor:pointer">Cancel</button>
+  </div>
+</div>
+
+<!-- Puzzle overlay -->
+<div id="pzl-ov" style="position:fixed;inset:0;z-index:55;display:none;flex-direction:column;background:#1a0d14;touch-action:none;overflow:hidden">
+  <div id="pzl-bar" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,.55);flex-shrink:0;position:relative;z-index:5">
+    <button onclick="pzlClose()" style="background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 18px;font:inherit;cursor:pointer;font-size:.85rem">✕ Exit</button>
+    <span id="pzl-status" style="color:#ddd;font-size:.82rem;flex:1;text-align:center"></span>
+    <button onclick="pzlHint()" style="background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 18px;font:inherit;cursor:pointer;font-size:.85rem">👁 Hint</button>
+  </div>
+  <img id="pzl-hint-img" src="" alt="" style="position:absolute;top:52px;left:50%;transform:translateX(-50%);width:min(160px,28vw);border-radius:10px;opacity:.28;pointer-events:none;display:none;z-index:4;border:2px solid rgba(255,255,255,.2)">
+  <div id="pzl-board" style="flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#2a1020 0%,#0d0608 100%)"></div>
+  <div id="pzl-done" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.82);color:#fff;text-align:center;padding:20px;z-index:20;gap:20px">
+    <div style="font-size:1.6rem;font-weight:bold">🎉 You solved it together! 💘</div>
+    <div style="font-size:.95rem;color:#ddd;margin-top:-8px">Pick what's next</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:4px">
+      <button onclick="pzlNextLevel('harder')" style="font:inherit;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:12px 24px;cursor:pointer;font-size:.95rem">🔥 Harder difficulty</button>
+      <button onclick="pzlNextLevel('new')"    style="font:inherit;background:rgba(255,255,255,.18);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:12px 24px;cursor:pointer;font-size:.95rem">🖼 New photo</button>
+      <button onclick="pzlNextLevel('same')"   style="font:inherit;background:rgba(255,255,255,.18);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:12px 24px;cursor:pointer;font-size:.95rem">🔄 Same puzzle again</button>
+      <button onclick="pzlClose()"             style="font:inherit;background:none;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:10px 20px;cursor:pointer;font-size:.85rem">✕ Exit</button>
+    </div>
+  </div>
+</div>
 
 <!-- Move-photo modal -->
 <div id="gmove-modal">
@@ -564,7 +622,7 @@ function onDataChanged(callback) {
     callback(doc.data());
     writing = false;
   }, function(e){
-    setSync('off', 'error: ' + e.code);
+    setSync('off', 'error: ' + (e.code||e.message||'network'));
     db = null;
     renderAll(); wheel(); showQ(true);
   });
@@ -1172,20 +1230,29 @@ onDataChanged(function(data){
 
 // Polling fallback — catches updates the real-time listener misses (e.g. backgrounded tab, mobile)
 if(db){
+  var pollFailCount=0, lastPollAttempt=0;
   setInterval(function(){
-    if(pendingWrites > 0) return;
-    if(Date.now() - lastWriteAt < 4000) return; // skip poll briefly after a local write
-    db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
-      if(doc.exists){ applySnapshot(doc.data()); setSync('on','poll ✓ '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})); }
-    }).catch(function(e){ setSync('off','poll err: '+e.code); });
-  }, 3000);
+    if(pendingWrites>0) return;
+    if(Date.now()-lastWriteAt<4000) return;
+    // Backoff: wait longer after each failure (max 60s between attempts)
+    var backoff=Math.min(pollFailCount*10000, 60000);
+    if(Date.now()-lastPollAttempt < backoff) return;
+    lastPollAttempt=Date.now();
+    db.collection('usapp').doc('state').get().then(function(doc){
+      pollFailCount=0;
+      if(doc.exists){applySnapshot(doc.data());setSync('on','live ✓');}
+    }).catch(function(){
+      pollFailCount++;
+      setSync('off',pollFailCount>1?'offline':'reconnecting…');
+    });
+  }, 5000);
 }
 
 // Manual sync — called when user taps the sync badge
 function manualSync(){
   if(!db){ setSync('off','local only'); return; }
   var t=$('stxt'); t.textContent='syncing…';
-  db.collection('usapp').doc('state').get({source:'server'}).then(function(doc){
+  db.collection('usapp').doc('state').get().then(function(doc){
     if(doc.exists){
       var data=doc.data();
       var checked=data['ol2']?data['ol2'].filter(function(x){return x[2]}).length:'?';
@@ -2082,6 +2149,379 @@ window.addEventListener('resize',function(){
   clearTimeout(window._rz);
   window._rz=setTimeout(function(){ gRend(); renderMoments(); renderBooks(); },250);
 });
+
+// ===== JIGSAW PUZZLE =====
+var PZ={cols:3,imgUrl:'',thumbUrl:'',pieces:[],ps:0,tab:0,dirs:null,imgEl:null,dragging:null,pzUnsub:null,gz:0};
+
+window.pzlSetDiff=function(b){document.querySelectorAll('.pzl-dbtn').forEach(function(x){x.classList.remove('active');});b.classList.add('active');PZ.cols=parseInt(b.dataset.cols);PZ.rows=PZ.cols;};
+
+window.pzlOpenPicker=function(){
+  var g=$('pzl-pick-grid');g.innerHTML='';
+  if(!gphotos||!gphotos.length){g.innerHTML='<p style="color:var(--mute)">Add photos to gallery first ♥</p>';return;}
+  gphotos.forEach(function(p){
+    var img=document.createElement('img');img.src=cThumb(p.publicId);img.title=p.cap||'';
+    img.onclick=function(){$('pzl-picker').style.display='none';pzlStart(cFull(p.publicId),cThumb(p.publicId));};
+    g.appendChild(img);
+  });
+  $('pzl-picker').style.display='flex';
+};
+
+window.pzlClose=function(){$('pzl-ov').style.display='none';$('pzl-hint-img').style.display='none';$('pzl-done').style.display='none';if(PZ.pzUnsub){PZ.pzUnsub();PZ.pzUnsub=null;}};
+window.pzlHint=function(){var i=$('pzl-hint-img');i.style.display=i.style.display==='block'?'none':'block';};
+window.pzlNew=function(){window.pzlClose();window.pzlOpenPicker();};
+window.pzlResume=function(){var s=ld('pz_state',null);if(!s||!s.imgUrl)return;pzlLoad(s);};
+
+window.pzlNextLevel=function(mode){
+  $('pzl-done').style.display='none';
+  if(mode==='harder'){
+    var next=Math.min(PZ.cols+1,6);
+    PZ.cols=next;PZ.rows=next;
+    document.querySelectorAll('.pzl-dbtn').forEach(function(b){
+      b.classList.toggle('active',parseInt(b.dataset.cols)===next);
+    });
+    pzlStart(PZ.imgUrl,PZ.thumbUrl);
+  } else if(mode==='new'){
+    pzlClose();pzlOpenPicker();
+  } else {
+    pzlStart(PZ.imgUrl,PZ.thumbUrl);
+  }
+};
+
+function pzlStatus(t){$('pzl-status').textContent=t;}
+
+// Seeded RNG
+function pzRng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+// Build edge-direction table: hDir[c][r]=±1 (vert edge between col c,c+1), vDir[c][r]=±1 (horiz edge between row r,r+1)
+function pzBuildDirs(cols,rows,seed){
+  var rng=pzRng(seed),h=[],v=[];
+  for(var c=0;c<cols-1;c++){h[c]=[];for(var r=0;r<rows;r++)h[c][r]=rng()>.5?1:-1;}
+  for(var c=0;c<cols;c++){v[c]=[];for(var r=0;r<rows-1;r++)v[c][r]=rng()>.5?1:-1;}
+  return{h:h,v:v};
+}
+function pzEdges(col,row){
+  var d=PZ.dirs,C=PZ.cols,R=PZ.rows;
+  return{top:row===0?0:-d.v[col][row-1],bottom:row===R-1?0:d.v[col][row],left:col===0?0:-d.h[col-1][row],right:col===C-1?0:d.h[col][row]};
+}
+
+// Build SVG path string for jigsaw piece
+function pzPath(col,row){
+  var ps=PZ.ps,tab=PZ.tab,e=pzEdges(col,row);
+  var t=tab,b=t+ps;
+  var parts=['M',t,t];
+
+  function seg(ax,ay,bx,by,dir,hz){
+    if(dir===0){parts.push('L',bx,by);return;}
+    var mx=(ax+bx)/2,my=(ay+by)/2;
+    var d=dir*tab*0.9,w=(hz?(bx-ax):(by-ay))*0.28;
+    if(hz){
+      parts.push('C',ax+w,ay, mx-w,my+d, mx,my+d);
+      parts.push('C',mx+w,my+d, bx-w,by, bx,by);
+    } else {
+      parts.push('C',ax,ay+w, mx+d,my-w, mx+d,my);
+      parts.push('C',mx+d,my+w, bx,by-w, bx,by);
+    }
+  }
+
+  seg(t,t, b,t, -e.top,    true);   // top edge
+  seg(b,t, b,b,  e.right,  false);  // right edge
+  seg(b,b, t,b,  e.bottom, true);   // bottom edge
+  seg(t,b, t,t, -e.left,   false);  // left edge
+  parts.push('Z');
+  return parts.join(' ');
+}
+
+// Make a piece element using SVG clipPath + CSS background-image (no canvas CORS issues)
+function pzMakePiece(p){
+  var ps=PZ.ps,tab=PZ.tab,cs=ps+2*tab;
+  var cols=PZ.cols,rows=PZ.cols;
+  var clipId='pzc'+p.id;
+
+  // Build SVG with clipPath
+  var pathD=pzPath(p.col,p.row);
+  var svgNS='http://www.w3.org/2000/svg';
+  var svg=document.createElementNS(svgNS,'svg');
+  svg.setAttribute('width',cs);svg.setAttribute('height',cs);
+  svg.setAttribute('style','position:absolute;top:0;left:0;pointer-events:none;overflow:visible');
+
+  var defs=document.createElementNS(svgNS,'defs');
+  var clip=document.createElementNS(svgNS,'clipPath');
+  clip.setAttribute('id',clipId);
+  var path=document.createElementNS(svgNS,'path');
+  path.setAttribute('d',pathD);
+  clip.appendChild(path);defs.appendChild(clip);svg.appendChild(defs);
+
+  // Stroke outline on top
+  var outline=document.createElementNS(svgNS,'path');
+  outline.setAttribute('d',pathD);
+  outline.setAttribute('fill','none');
+  outline.setAttribute('stroke','rgba(255,255,255,0.5)');
+  outline.setAttribute('stroke-width','2');
+  svg.appendChild(outline);
+
+  // Image div clipped by SVG clipPath
+  var imgDiv=document.createElement('div');
+  imgDiv.style.cssText=[
+    'position:absolute','top:0','left:0',
+    'width:'+cs+'px','height:'+cs+'px',
+    'background-image:url('+( PZ.blobUrl||PZ.imgUrl)+')',
+    'background-size:'+(cols*ps)+'px '+(rows*ps)+'px',
+    'background-position:'+(-p.col*ps+tab)+'px '+(-p.row*ps+tab)+'px',
+    'background-repeat:no-repeat',
+    'clip-path:url(#'+clipId+')'
+  ].join(';');
+
+  var wrap=document.createElement('div');
+  wrap.className='pzl-piece'+(p.snapped?' snapped':'');
+  wrap.id='pzp'+p.id;
+  wrap.style.cssText='left:'+p.x+'px;top:'+p.y+'px;width:'+cs+'px;height:'+cs+'px;position:absolute;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.8))';
+  wrap.appendChild(imgDiv);
+  wrap.appendChild(svg);
+  pzAttachDrag(wrap,p);
+  return wrap;
+}
+
+// Drag — always draggable
+function pzAttachDrag(el,p){
+  var sx,sy,ox,oy,on=false;
+  el.addEventListener('pointerdown',function(e){
+    e.preventDefault();on=true;PZ.dragging=p.id;
+    sx=e.clientX;sy=e.clientY;
+    // Read from style directly — offsetLeft can lag behind a running transition
+    ox=parseInt(el.style.left)||0;
+    oy=parseInt(el.style.top)||0;
+    try{el.setPointerCapture(e.pointerId);}catch(err){}
+    el.style.transition='none';
+    el.style.zIndex=++PZ.gz;
+    el.classList.remove('snapped');p.snapped=false;
+  },{passive:false});
+  el.addEventListener('pointermove',function(e){
+    if(!on)return;
+    var newLeft=(ox+(e.clientX-sx));
+    var newTop =(oy+(e.clientY-sy));
+    el.style.left=newLeft+'px';
+    el.style.top =newTop+'px';
+    // Visual hint: highlight nearest snappable neighbour
+    pzHighlightNearest(p, newLeft, newTop);
+  });
+  el.addEventListener('pointerup',function(e){
+    if(!on)return;on=false;PZ.dragging=null;
+    pzClearHighlight();
+    var ps=PZ.ps,tab=PZ.tab;
+    var nx=parseInt(el.style.left),ny=parseInt(el.style.top);
+    p.x=nx;p.y=ny;
+    var myImgX=nx+tab, myImgY=ny+tab;
+    var didSnap=false;
+    var thresh=ps*0.75; // generous: 75% of piece size
+    for(var i=0;i<PZ.pieces.length;i++){
+      var nb=PZ.pieces[i];
+      if(nb.id===p.id) continue;
+      var nbEl=document.getElementById('pzp'+nb.id);
+      var nbX=nbEl?parseInt(nbEl.style.left):nb.x;
+      var nbY=nbEl?parseInt(nbEl.style.top) :nb.y;
+      nb.x=nbX;nb.y=nbY;
+      var dc=p.col-nb.col, dr=p.row-nb.row;
+      if(Math.abs(dc)+Math.abs(dr)!==1) continue;
+      var expImgX=(nbX+tab)+dc*ps;
+      var expImgY=(nbY+tab)+dr*ps;
+      var dist=Math.sqrt((myImgX-expImgX)*(myImgX-expImgX)+(myImgY-expImgY)*(myImgY-expImgY));
+      if(dist>thresh) continue;
+      var finalX=expImgX-tab, finalY=expImgY-tab;
+      el.style.transition='left .15s,top .15s';
+      el.style.left=finalX+'px';el.style.top=finalY+'px';
+      p.x=finalX;p.y=finalY;p.snapped=true;
+      el.classList.add('snapped');el.style.zIndex=1;
+      gBurst(e.clientX,e.clientY,10);
+      didSnap=true;
+      break;
+    }
+    if(!didSnap){p.snapped=false;el.classList.remove('snapped');}
+    pzSave();pzSyncPiece(p);pzUpdateStatus();pzCheckDone();
+  });
+}
+
+function pzHighlightNearest(p,nx,ny){
+  pzClearHighlight();
+  var ps=PZ.ps,tab=PZ.tab,thresh=ps*0.75;
+  var myImgX=nx+tab,myImgY=ny+tab;
+  for(var i=0;i<PZ.pieces.length;i++){
+    var nb=PZ.pieces[i]; if(nb.id===p.id) continue;
+    var dc=p.col-nb.col,dr=p.row-nb.row;
+    if(Math.abs(dc)+Math.abs(dr)!==1) continue;
+    var nbEl=document.getElementById('pzp'+nb.id); if(!nbEl) continue;
+    var nbX=parseInt(nbEl.style.left),nbY=parseInt(nbEl.style.top);
+    var expImgX=(nbX+tab)+dc*ps,expImgY=(nbY+tab)+dr*ps;
+    var dist=Math.sqrt((myImgX-expImgX)*(myImgX-expImgX)+(myImgY-expImgY)*(myImgY-expImgY));
+    if(dist<thresh){
+      nbEl.style.outline='2px solid rgba(255,255,255,0.7)';
+      nbEl.dataset.hl='1';
+    }
+  }
+}
+function pzClearHighlight(){
+  document.querySelectorAll('#pzl-board .pzl-piece[data-hl]').forEach(function(e){
+    e.style.outline=''; delete e.dataset.hl;
+  });
+}
+
+function pzUpdateStatus(){
+  // Count how many pieces are correctly positioned relative to piece 0
+  var n=pzCorrectCount();
+  pzlStatus(n+' / '+PZ.pieces.length+' pieces connected');
+}
+
+function pzCorrectCount(){
+  if(!PZ.pieces.length) return 0;
+  var ps=PZ.ps,tab=PZ.tab,thresh=4; // within 4px = correctly placed
+  var p0=PZ.pieces[0];
+  var count=0;
+  PZ.pieces.forEach(function(p){
+    // Expected position relative to p0
+    var expX=p0.x+(p.col-p0.col)*ps;
+    var expY=p0.y+(p.row-p0.row)*ps;
+    var dist=Math.sqrt((p.x-expX)*(p.x-expX)+(p.y-expY)*(p.y-expY));
+    if(dist<thresh) count++;
+  });
+  return count;
+}
+
+function pzCheckDone(){
+  var n=pzCorrectCount();
+  if(n===PZ.pieces.length&&n>0){
+    // Clear all highlight outlines
+    document.querySelectorAll('#pzl-board .pzl-piece').forEach(function(e){
+      e.style.outline='';delete e.dataset.hl;
+    });
+    $('pzl-done').style.display='flex';
+    if(db) db.collection('puzzles').doc('pz').update({solved:true}).catch(function(){});
+    gBurst(window.innerWidth/2,window.innerHeight/2,30);
+  }
+}
+
+function pzRenderAll(){
+  var board=$('pzl-board');
+  board.querySelectorAll('.pzl-piece').forEach(function(e){e.remove();});
+  PZ.pieces.forEach(function(p){board.appendChild(pzMakePiece(p));});
+  pzUpdateStatus();
+}
+
+function pzLoadImg(url,cb){
+  var img=new Image();img.crossOrigin='anonymous';
+  img.onload=function(){cb(img);};
+  img.onerror=function(){var i2=new Image();i2.onload=function(){cb(i2);};i2.src=url;};
+  img.src=url+(url.indexOf('?')>=0?'&':'?')+'_=1';
+}
+
+function pzlStart(imgUrl,thumbUrl){
+  PZ.imgUrl=imgUrl;PZ.thumbUrl=thumbUrl||imgUrl;
+  $('pzl-hint-img').src=imgUrl;
+  $('pzl-ov').style.display='flex';
+  $('pzl-done').style.display='none';
+  pzlStatus('Loading image…');
+
+  // Fetch image as blob so CSS background-image works from any origin (file:// or served)
+  fetch(imgUrl)
+    .then(function(r){return r.blob();})
+    .then(function(blob){
+      PZ.blobUrl=URL.createObjectURL(blob);
+      pzlBuild(imgUrl,thumbUrl);
+    })
+    .catch(function(){
+      // Fallback: use URL directly (works when served over HTTP)
+      PZ.blobUrl=imgUrl;
+      pzlBuild(imgUrl,thumbUrl);
+    });
+}
+
+function pzlBuild(imgUrl,thumbUrl){
+  pzlStatus('Setting up…');
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    var board=$('pzl-board'),bw=board.clientWidth||window.innerWidth,bh=board.clientHeight||(window.innerHeight-50);
+    if(bw<10||bh<10){bw=window.innerWidth;bh=window.innerHeight-50;}
+    var cols=PZ.cols,rows=cols;
+    PZ.rows=rows;
+    PZ.ps=Math.floor(Math.min(bw,bh)*0.52/cols);
+    PZ.tab=Math.max(8,Math.floor(PZ.ps*0.22));
+    PZ.dirs=pzBuildDirs(cols,rows,cols*73+imgUrl.length);
+    var cs=PZ.ps+2*PZ.tab;
+    // Remove any old ghost grid
+    var old=document.getElementById('pzl-ghost');if(old)old.remove();
+    PZ.pieces=[];
+    for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+      PZ.pieces.push({id:r*cols+c,col:c,row:r,
+        x:Math.floor(Math.random()*Math.max(bw-cs,10)),
+        y:Math.floor(Math.random()*Math.max(bh-cs,10)),
+        snapped:false});
+    }
+    pzRenderAll();pzSave();
+    var nb=$('pzl-new-btn'),rb=$('pzl-resume-btn');
+    if(nb)nb.style.display='';if(rb)rb.style.display='';
+    pzThumb();
+    if(db){
+      db.collection('puzzles').doc('pz').set({imgUrl:imgUrl,thumbUrl:thumbUrl||imgUrl,cols:cols,rows:rows,ps:PZ.ps,tab:PZ.tab,dirsH:PZ.dirs.h,dirsV:PZ.dirs.v,pieces:PZ.pieces,solved:false,ts:Date.now()}).catch(function(e){console.warn(e);});
+      pzStartSync();
+    }
+  });});
+}
+
+function pzlLoad(state){
+  PZ.imgUrl=state.imgUrl;PZ.thumbUrl=state.thumbUrl||state.imgUrl;
+  PZ.cols=state.cols;PZ.rows=state.rows||state.cols;PZ.ps=state.ps;PZ.tab=state.tab||Math.floor(state.ps*0.22);
+  PZ.origX=state.origX||0;PZ.origY=state.origY||0;
+  PZ.dirs={h:state.dirsH,v:state.dirsV};PZ.pieces=state.pieces;
+  $('pzl-hint-img').src=PZ.imgUrl;
+  $('pzl-ov').style.display='flex';$('pzl-done').style.display='none';
+  pzlStatus('Loading image…');
+  fetch(PZ.imgUrl)
+    .then(function(r){return r.blob();})
+    .then(function(blob){PZ.blobUrl=URL.createObjectURL(blob);pzRenderAll();if(db)pzStartSync();})
+    .catch(function(){PZ.blobUrl=PZ.imgUrl;pzRenderAll();if(db)pzStartSync();});
+}
+
+function pzSave(){sv('pz_state',{imgUrl:PZ.imgUrl,thumbUrl:PZ.thumbUrl,cols:PZ.cols,rows:PZ.rows,ps:PZ.ps,tab:PZ.tab,origX:PZ.origX,origY:PZ.origY,dirsH:PZ.dirs.h,dirsV:PZ.dirs.v,pieces:PZ.pieces});}
+
+function pzSyncPiece(p){
+  if(!db)return;
+  var u={};u['p'+p.id]={x:p.x,y:p.y,snapped:p.snapped};
+  db.collection('puzzles').doc('pz').update(u).catch(function(e){console.warn(e);});
+}
+
+function pzStartSync(){
+  if(PZ.pzUnsub)PZ.pzUnsub();
+  PZ.pzUnsub=db.collection('puzzles').doc('pz').onSnapshot(function(doc){
+    if(!doc.exists)return;
+    var data=doc.data();
+    if(data.imgUrl&&data.imgUrl!==PZ.imgUrl){pzlLoad(data);return;}
+    PZ.pieces.forEach(function(p){
+      if(p.id===PZ.dragging)return;
+      var rp=data['p'+p.id];if(!rp)return;
+      if(rp.x===p.x&&rp.y===p.y&&rp.snapped===p.snapped)return;
+      p.x=rp.x;p.y=rp.y;p.snapped=rp.snapped;
+      var el=document.getElementById('pzp'+p.id);if(!el)return;
+      el.style.transition='left .2s,top .2s';
+      el.style.left=rp.x+'px';el.style.top=rp.y+'px';
+      el.classList.toggle('snapped',!!rp.snapped);
+      setTimeout(function(){el.style.transition='';},250);
+    });
+    pzUpdateStatus();
+    if(data.solved)$('pzl-done').style.display='flex';
+  },function(e){console.warn(e);});
+}
+
+function pzThumb(){
+  var el=$('pzl-thumb');if(!el)return;
+  var s=ld('pz_state',null);if(!s||!s.imgUrl){el.innerHTML='';return;}
+  var n=s.pieces?s.pieces.filter(function(p){return p.snapped;}).length:0;
+  var t=s.pieces?s.pieces.length:0;
+  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-top:4px"><img src="'+(s.thumbUrl||s.imgUrl)+'" crossorigin="anonymous" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid var(--soft)"><small style="color:var(--mute)">Last: <b>'+n+'/'+t+'</b> placed</small></div>';
+}
+
+(function(){
+  var s=ld('pz_state',null);
+  if(s&&s.imgUrl){var nb=$('pzl-new-btn'),rb=$('pzl-resume-btn');if(nb)nb.style.display='';if(rb)rb.style.display='';pzThumb();}
+  if(db){db.collection('puzzles').doc('pz').get().then(function(doc){if(!doc.exists||!doc.data().imgUrl)return;var r=doc.data(),l=ld('pz_state',null);if(!l||(r.ts&&r.ts>(l.ts||0))){sv('pz_state',r);pzThumb();}var nb=$('pzl-new-btn'),rb=$('pzl-resume-btn');if(nb)nb.style.display='';if(rb)rb.style.display='';}).catch(function(){});}
+})();
+// ===== END JIGSAW PUZZLE =====
 
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 
