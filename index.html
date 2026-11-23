@@ -170,6 +170,40 @@ small{color:var(--mute)}
 .gm-alb-btn.current{opacity:.4;cursor:default}
 #gmove-cancel{background:none;border:none;color:var(--mute);font:inherit;cursor:pointer;text-decoration:underline;font-size:.85rem;align-self:flex-end}
 
+/* ===== Play Space ===== */
+.ps-heading{font-size:1.1rem;font-weight:bold;margin:8px 0 2px}
+.ps-sub{font-size:.82rem;color:var(--mute);margin-bottom:10px}
+.ps-tabs{display:flex;gap:8px;margin-bottom:14px}
+.ps-tab{font:inherit;border-radius:999px;border:2px solid var(--soft);background:var(--card);color:var(--ink);padding:8px 20px;cursor:pointer;transition:all .2s;font-size:.9rem}
+.ps-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ps-card-wrap{perspective:900px;margin:0 auto 14px;max-width:340px}
+.ps-card{width:100%;border-radius:18px;cursor:pointer;transform-style:preserve-3d;transition:transform .6s;aspect-ratio:3/2}
+.ps-card.flipped{transform:rotateY(180deg)}
+.ps-card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d}
+.ps-card-front,.ps-card-back{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center}
+.ps-card-front{background:linear-gradient(135deg,var(--accent),#ff8fab);color:#fff;box-shadow:0 8px 24px rgba(230,59,111,.35)}
+.ps-card-front span{font-size:1.6rem;font-weight:bold}
+.ps-card-front small{font-size:.82rem;opacity:.85}
+.ps-card-back{background:var(--card);color:var(--ink);transform:rotateY(180deg);box-shadow:0 8px 24px rgba(0,0,0,.12);border:2px solid var(--soft)}
+.ps-card-back span{font-size:1.05rem;line-height:1.5;font-style:italic}
+.ps-card-lg{aspect-ratio:4/3}
+.ps-card-lg .ps-card-back{flex-direction:column;gap:0;padding:16px}
+.lg-option{flex:1;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.92rem;font-weight:600;padding:10px;border-radius:12px;cursor:pointer;transition:background .2s;line-height:1.4}
+.lg-option:hover{background:var(--soft)}
+.lg-option.picked{background:var(--accent);color:#fff}
+.lg-or{font-size:.75rem;font-weight:bold;color:var(--mute);text-transform:uppercase;letter-spacing:.1em;padding:4px 0;flex-shrink:0}
+.ps-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
+.ps-actions button{font:inherit;border-radius:999px;background:var(--accent);color:#fff;border:0;padding:9px 20px;cursor:pointer;transition:transform .15s}
+.ps-actions button:hover{transform:scale(1.05)}
+.ps-sec{background:none !important;color:var(--mute) !important;border:1px solid var(--soft) !important}
+.ps-scores{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px}
+.ps-score-box{text-align:center;min-width:60px}
+.ps-score-box span{display:block;font-size:2.4rem;font-weight:bold;color:var(--accent);line-height:1}
+.ps-score-box label{font-size:.78rem;color:var(--mute)}
+.ps-score-vs{font-size:.85rem;color:var(--mute);font-weight:bold}
+.ps-winner{text-align:center;font-size:1.1rem;font-weight:bold;color:var(--accent);min-height:1.6em;margin:6px 0}
+.ps-divider{border:none;border-top:2px dashed var(--soft);margin:20px 0}
+
 /* ===== Music player ===== */
 #music-bar{position:fixed;bottom:14px;left:14px;z-index:20;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--soft);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);font-family:inherit;font-size:.78rem;color:var(--mute);max-width:calc(100vw - 140px)}
 #music-toggle{background:none;border:none;font-size:1.1rem;padding:0;cursor:pointer;line-height:1;color:var(--accent);flex-shrink:0}
@@ -245,15 +279,7 @@ small{color:var(--mute)}
 <div id="dnotes-cards" style="margin-top:16px"></div>
 </div></details>
 
-<details><summary>📓 Conversation Journal</summary><div class="body">
-<div class="entry-form" id="jour-form">
-  <input type="date" id="jour-date">
-  <input type="text" id="jour-title" placeholder="Topic — e.g. Family, Dreams, Conflict…">
-  <textarea id="jour-body" placeholder="What she shared · what I shared · worth revisiting…" style="min-height:100px"></textarea>
-  <div class="save-row"><button id="btn-add-journal" onclick="addJournal()">Save entry ♥</button></div>
-</div>
-<div class="entry-cards" id="jour-cards"></div>
-</div></details>
+
 
 <details><summary>🧭 Topic Tracker</summary><div class="body"><div class="scroll"><table id="tt"></table></div></div></details>
 
@@ -305,14 +331,62 @@ small{color:var(--mute)}
 <div id="galbums"></div>
 </div></details>
 
-<details><summary>🔄 Weekly Check-in</summary><div class="body">
-<ul>
-<li>Best moment this week?</li><li>One thing I appreciated about you</li>
-<li>Are we comfortable? Is there space to exhale?</li>
-<li>Anything either of us wants more or less of?</li>
-<li>What are we doing next? Spin the wheel 🎡</li></ul>
-<textarea id="weekly-input" placeholder="Notes…"></textarea>
-<div class="save-row"><button id="btn-save-weekly" onclick="saveWeekly()">Save notes ♥</button></div>
+<details><summary>🎮 Play Space</summary><div class="body">
+
+  <!-- Truth or Dare -->
+  <div class="ps-heading">Truth or Dare</div>
+  <div class="ps-sub">Pick a stack, tap the card to reveal. Tap again to flip back.</div>
+  <div class="ps-tabs">
+    <button class="ps-tab active" id="td-tab-truth" onclick="tdSwitch('truth')">🤔 Truth</button>
+    <button class="ps-tab" id="td-tab-dare" onclick="tdSwitch('dare')">🔥 Dare</button>
+  </div>
+  <div class="ps-card-wrap">
+    <div class="ps-card" id="td-card" onclick="tdFlip()">
+      <div class="ps-card-inner">
+        <div class="ps-card-front"><span id="td-front-label">🤔 Truth</span><small>Tap to reveal</small></div>
+        <div class="ps-card-back"><span id="td-text"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ps-actions">
+    <button onclick="tdNext()">Next card ♥</button>
+    <button class="ps-sec" onclick="tdShuffle()">🔀 Shuffle</button>
+  </div>
+
+  <div class="ps-divider"></div>
+
+  <!-- Lovers Game -->
+  <div class="ps-heading">Lovers Game <small style="font-size:.75rem;font-weight:400;color:var(--mute)">— Would You Rather</small></div>
+  <div class="ps-sub">Each pick a side. First to 5 wins 💘</div>
+  <div class="ps-scores">
+    <div class="ps-score-box">
+      <span id="lg-score-a">0</span>
+      <label>Her</label>
+    </div>
+    <div class="ps-score-vs">vs</div>
+    <div class="ps-score-box">
+      <span id="lg-score-b">0</span>
+      <label>Him</label>
+    </div>
+  </div>
+  <div class="ps-card-wrap">
+    <div class="ps-card ps-card-lg" id="lg-card" onclick="lgFlip()">
+      <div class="ps-card-inner">
+        <div class="ps-card-front"><span>💘 Lovers Game</span><small>Tap to reveal</small></div>
+        <div class="ps-card-back">
+          <div class="lg-option" id="lg-opt-a" onclick="lgPick(event,'a')"></div>
+          <div class="lg-or">or</div>
+          <div class="lg-option" id="lg-opt-b" onclick="lgPick(event,'b')"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="lg-winner" class="ps-winner"></div>
+  <div class="ps-actions">
+    <button onclick="lgNext()">Next round ♥</button>
+    <button class="ps-sec" onclick="lgReset()">Reset scores</button>
+  </div>
+
 </div></details>
 </main>
 
@@ -973,53 +1047,12 @@ function addBook(){
 renderBooks();
 
 
-var journalEntries = Array.isArray(ld('f_journal', [])) ? ld('f_journal', []) : [];
-sv('f_journal', journalEntries); // fix any legacy string value in localStorage
-function renderJournal(){
-  var c = document.getElementById('jour-cards'); if(!c) return;
-  c.innerHTML = '';
-  journalEntries.forEach(function(e, i){
-    var d = document.createElement('div'); d.className = 'ecard';
-    d.innerHTML = '<div class="edate">'+esc(e.date||'')+'</div>'
-      +'<div class="etitle">'+esc(e.title||'')+'</div>'
-      +'<div class="ebody">'+esc(e.body||'')+'</div>'
-      +'<button class="edel" data-ji="'+i+'">Remove</button>';
-    c.appendChild(d);
-  });
-}
-// journal delete via event delegation — no stale closure
-document.getElementById('jour-cards').addEventListener('click', function(e){
-  var btn = e.target.closest('.edel');
-  if(!btn) return;
-  var idx = parseInt(btn.dataset.ji, 10);
-  if(isNaN(idx)) return;
-  deleteJournal(idx);
-});
-function addJournal(){
-  try {
-  var date  = document.getElementById('jour-date').value;
-  var title = document.getElementById('jour-title').value.trim();
-  var body  = document.getElementById('jour-body').value.trim();
-  if(!title && !body){ alert('Add a title or some text first ♥'); return; }
-  journalEntries.unshift({date:date, title:title, body:body});
-  saveData('f_journal', journalEntries);
-  document.getElementById('jour-date').valueAsDate=new Date();
-  document.getElementById('jour-title').value='';
-  document.getElementById('jour-body').value='';
-  renderJournal();
-  var btn=document.getElementById('btn-add-journal');
-  if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
-  } catch(e){alert('Journal error: '+e.message);}
-}
-function deleteJournal(i){
-  journalEntries.splice(i,1);
-  saveData('f_journal', journalEntries);
-  renderJournal();
-}
+var journalEntries = [];
+function renderJournal(){}
+function addJournal(){}
+function deleteJournal(){}
 // Set today's date as default
-(function(){ var d=document.getElementById('jour-date'); if(d) d.valueAsDate=new Date(); })();
 (function(){ var d=document.getElementById('mom-date'); if(d) d.valueAsDate=new Date(); })();
-renderJournal();
 
 // ===== Daily Discovery notes (per-question array) =====
 var dnotesEl = document.getElementById('dnotes-input');
@@ -1031,17 +1064,6 @@ function saveDnotes(){
   if(dnotesEl) dnotesEl.value = '';   // clear after save
   renderDiscoveryCards();
   var btn=document.getElementById('btn-save-dnotes');
-  if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
-}
-
-// ===== Weekly Check-in notes (manual save) =====
-var weeklyEl = document.getElementById('weekly-input');
-if(weeklyEl){ weeklyEl.value = ld('f_weekly',''); }
-function saveWeekly(){
-  var v = weeklyEl ? weeklyEl.value : '';
-  sv('f_weekly', v);
-  saveData('f_weekly', v);
-  var btn=document.getElementById('btn-save-weekly');
   if(btn){var orig=btn.textContent;btn.textContent='Saved ♥';setTimeout(function(){btn.textContent=orig;},1500);}
 }
 
@@ -1130,6 +1152,183 @@ function manualSync(){
     }
   }).catch(function(e){ setSync('off','err:'+e.code); });
 }
+
+// ===== PLAY SPACE =====
+
+// --- Truth or Dare decks ---
+var TD_TRUTH = [
+  "What's something you've never told me?",
+  "What's your biggest insecurity in this relationship?",
+  "What's one thing about me that drives you crazy (good or bad)?",
+  "What was your first impression of me?",
+  "What's your love language and do you feel I speak it?",
+  "What's one dream you're scared to say out loud?",
+  "If you could change one thing about our relationship, what would it be?",
+  "What's the most romantic thing you've ever done for someone?",
+  "What makes you feel most loved by me?",
+  "What's something you wish I understood better about you?",
+  "What's your favourite memory of us so far?",
+  "When did you first realise you had feelings for me?",
+  "What's one thing you want us to do more of?",
+  "What's something silly that makes you think of me?",
+  "What would your ideal day with me look like?"
+];
+
+var TD_DARE = [
+  "Send me a voice note saying one thing you love about me — right now.",
+  "Do your best impression of me.",
+  "Say three things you find attractive about me without laughing.",
+  "Write me a 3-line poem on the spot.",
+  "Show me your camera roll — I pick the photo you describe.",
+  "Sing the first line of a song that makes you think of me.",
+  "Tell me something kind you've thought about me but never said.",
+  "Act out how you felt the first time we spoke.",
+  "Name five things about me you're genuinely grateful for.",
+  "Screenshot your most-used emoji and explain why it fits us.",
+  "Describe our relationship using only three words.",
+  "Do something that you know makes me smile.",
+  "Tell me a secret — something small I don't know about you.",
+  "Show me your lockscreen and explain why you chose it.",
+  "Say 'I love you' in three different languages."
+];
+
+var tdMode = 'truth';
+var tdDeck = TD_TRUTH.slice();
+var tdIdx  = 0;
+
+function tdShuffle() {
+  tdDeck = (tdMode === 'truth' ? TD_TRUTH : TD_DARE).slice();
+  for (var i = tdDeck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = tdDeck[i]; tdDeck[i] = tdDeck[j]; tdDeck[j] = t;
+  }
+  tdIdx = 0;
+  var card = $('td-card');
+  if (card.classList.contains('flipped')) card.classList.remove('flipped');
+}
+
+function tdSwitch(mode) {
+  tdMode = mode;
+  $('td-tab-truth').classList.toggle('active', mode === 'truth');
+  $('td-tab-dare').classList.toggle('active', mode === 'dare');
+  $('td-front-label').textContent = mode === 'truth' ? '🤔 Truth' : '🔥 Dare';
+  var card = $('td-card');
+  if (card.classList.contains('flipped')) card.classList.remove('flipped');
+  tdShuffle();
+}
+
+function tdFlip() {
+  var card = $('td-card');
+  if (!card.classList.contains('flipped')) {
+    $('td-text').textContent = tdDeck[tdIdx % tdDeck.length];
+    card.classList.add('flipped');
+  } else {
+    card.classList.remove('flipped');
+  }
+}
+
+function tdNext() {
+  var card = $('td-card');
+  card.classList.remove('flipped');
+  tdIdx = (tdIdx + 1) % tdDeck.length;
+  setTimeout(function(){ $('td-text').textContent = tdDeck[tdIdx]; }, 320);
+}
+
+// init Truth or Dare
+tdShuffle();
+
+// --- Lovers Game (Would You Rather) ---
+var LG_CARDS = [
+  ["Stay in with candles & a movie","Go out dancing all night"],
+  ["Breakfast in bed every Sunday","Spontaneous midnight drives"],
+  ["Write each other love letters","Record voice messages instead"],
+  ["Travel somewhere new together","Perfect the same cosy spot forever"],
+  ["Cook a meal together at home","Dress up for a restaurant date"],
+  ["Start a business together","Travel the world for a year"],
+  ["Have one big romantic gesture a year","Small sweet surprises every week"],
+  ["Read the same book and discuss it","Watch a series together from ep 1"],
+  ["Dance in the kitchen to no music","Slow dance at a proper event"],
+  ["Know exactly what the other is thinking","Always be surprised by each other"],
+  ["Spend a full day with no phones","Have a day where only one of you can talk"],
+  ["Laugh every single day","Have one deep conversation a week"],
+  ["Live in a tiny flat in a big city","A big house somewhere quiet"],
+  ["Always be honest even if it hurts","Protect each other's feelings first"],
+  ["Be each other's best friend","Be each other's greatest adventure"]
+];
+
+var lgDeck = LG_CARDS.slice();
+var lgIdx  = 0;
+var lgScoreA = 0;
+var lgScoreB = 0;
+var lgPicked = null;
+
+function lgShuffle() {
+  for (var i = lgDeck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = lgDeck[i]; lgDeck[i] = lgDeck[j]; lgDeck[j] = t;
+  }
+  lgIdx = 0;
+}
+
+function lgFlip() {
+  var card = $('lg-card');
+  if (!card.classList.contains('flipped')) {
+    var pair = lgDeck[lgIdx % lgDeck.length];
+    $('lg-opt-a').textContent = pair[0];
+    $('lg-opt-b').textContent = pair[1];
+    $('lg-opt-a').classList.remove('picked');
+    $('lg-opt-b').classList.remove('picked');
+    lgPicked = null;
+    card.classList.add('flipped');
+  } else {
+    card.classList.remove('flipped');
+  }
+}
+
+function lgPick(e, side) {
+  e.stopPropagation();
+  if (lgPicked) return; // already picked this round
+  lgPicked = side;
+  if (side === 'a') {
+    lgScoreA++;
+    $('lg-opt-a').classList.add('picked');
+  } else {
+    lgScoreB++;
+    $('lg-opt-b').classList.add('picked');
+  }
+  $('lg-score-a').textContent = lgScoreA;
+  $('lg-score-b').textContent = lgScoreB;
+  var win = '';
+  if (lgScoreA >= 5) win = '💘 She wins this round!';
+  if (lgScoreB >= 5) win = '💘 He wins this round!';
+  if (lgScoreA >= 5 && lgScoreB >= 5) win = '💘 It\'s a tie — you\'re perfect for each other!';
+  $('lg-winner').textContent = win;
+  if (win) gBurst(window.innerWidth/2, window.innerHeight/2, 18);
+}
+
+function lgNext() {
+  var card = $('lg-card');
+  card.classList.remove('flipped');
+  lgPicked = null;
+  lgIdx = (lgIdx + 1) % lgDeck.length;
+  $('lg-winner').textContent = '';
+  setTimeout(function(){
+    $('lg-opt-a').classList.remove('picked');
+    $('lg-opt-b').classList.remove('picked');
+  }, 320);
+}
+
+function lgReset() {
+  lgScoreA = 0; lgScoreB = 0; lgPicked = null;
+  $('lg-score-a').textContent = '0';
+  $('lg-score-b').textContent = '0';
+  $('lg-winner').textContent = '';
+  var card = $('lg-card');
+  card.classList.remove('flipped');
+  lgShuffle();
+}
+
+lgShuffle();
 
 // ===== PHOTO GALLERY (Cloudinary + Firestore) =====
 
