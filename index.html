@@ -2280,62 +2280,120 @@ function pzMakePiece(p){
   return wrap;
 }
 
-// Drag — always draggable
+// Drag — moves entire group together
 function pzAttachDrag(el,p){
-  var sx,sy,ox,oy,on=false;
+  var sx,sy,on=false;
   el.addEventListener('pointerdown',function(e){
     e.preventDefault();on=true;PZ.dragging=p.id;
     sx=e.clientX;sy=e.clientY;
-    // Read from style directly — offsetLeft can lag behind a running transition
-    ox=parseInt(el.style.left)||0;
-    oy=parseInt(el.style.top)||0;
     try{el.setPointerCapture(e.pointerId);}catch(err){}
-    el.style.transition='none';
-    el.style.zIndex=++PZ.gz;
-    el.classList.remove('snapped');p.snapped=false;
+    // Lift entire group
+    var gid=p.groupId;
+    PZ.pieces.forEach(function(q){
+      if(q.groupId!==gid) return;
+      var qel=document.getElementById('pzp'+q.id);
+      if(qel){
+        q._ox=parseInt(qel.style.left)||0;
+        q._oy=parseInt(qel.style.top)||0;
+        qel.style.transition='none';
+        qel.style.zIndex=++PZ.gz;
+        qel.classList.remove('snapped');
+      }
+    });
+    p.snapped=false;
   },{passive:false});
+
   el.addEventListener('pointermove',function(e){
     if(!on)return;
-    var newLeft=(ox+(e.clientX-sx));
-    var newTop =(oy+(e.clientY-sy));
-    el.style.left=newLeft+'px';
-    el.style.top =newTop+'px';
-    // Visual hint: highlight nearest snappable neighbour
-    pzHighlightNearest(p, newLeft, newTop);
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    var gid=p.groupId;
+    PZ.pieces.forEach(function(q){
+      if(q.groupId!==gid) return;
+      var qel=document.getElementById('pzp'+q.id);
+      if(qel){
+        qel.style.left=(q._ox+dx)+'px';
+        qel.style.top =(q._oy+dy)+'px';
+      }
+    });
+    // Highlight nearest snappable neighbour for the dragged piece only
+    pzHighlightNearest(p, (p._ox+dx), (p._oy+dy));
   });
+
   el.addEventListener('pointerup',function(e){
     if(!on)return;on=false;PZ.dragging=null;
     pzClearHighlight();
-    var ps=PZ.ps,tab=PZ.tab;
-    var nx=parseInt(el.style.left),ny=parseInt(el.style.top);
-    p.x=nx;p.y=ny;
-    var myImgX=nx+tab, myImgY=ny+tab;
-    var didSnap=false;
-    var thresh=ps*0.75; // generous: 75% of piece size
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    var gid=p.groupId;
+    // Commit new positions for the whole group
+    PZ.pieces.forEach(function(q){
+      if(q.groupId!==gid) return;
+      var qel=document.getElementById('pzp'+q.id);
+      if(qel){ q.x=parseInt(qel.style.left); q.y=parseInt(qel.style.top); }
+    });
+
+    // Snap check: test every piece in the dragged group against every piece outside it
+    var ps=PZ.ps, tab=PZ.tab, thresh=ps*0.75;
+    var snapTarget=null, snapPiece=null, snapNb=null;
+
+    outer:
     for(var i=0;i<PZ.pieces.length;i++){
-      var nb=PZ.pieces[i];
-      if(nb.id===p.id) continue;
-      var nbEl=document.getElementById('pzp'+nb.id);
-      var nbX=nbEl?parseInt(nbEl.style.left):nb.x;
-      var nbY=nbEl?parseInt(nbEl.style.top) :nb.y;
-      nb.x=nbX;nb.y=nbY;
-      var dc=p.col-nb.col, dr=p.row-nb.row;
-      if(Math.abs(dc)+Math.abs(dr)!==1) continue;
-      var expImgX=(nbX+tab)+dc*ps;
-      var expImgY=(nbY+tab)+dr*ps;
-      var dist=Math.sqrt((myImgX-expImgX)*(myImgX-expImgX)+(myImgY-expImgY)*(myImgY-expImgY));
-      if(dist>thresh) continue;
-      var finalX=expImgX-tab, finalY=expImgY-tab;
-      el.style.transition='left .15s,top .15s';
-      el.style.left=finalX+'px';el.style.top=finalY+'px';
-      p.x=finalX;p.y=finalY;p.snapped=true;
-      el.classList.add('snapped');el.style.zIndex=1;
-      gBurst(e.clientX,e.clientY,10);
-      didSnap=true;
-      break;
+      var pi=PZ.pieces[i];
+      if(pi.groupId!==gid) continue;
+      var myImgX=pi.x+tab, myImgY=pi.y+tab;
+      for(var j=0;j<PZ.pieces.length;j++){
+        var nb=PZ.pieces[j];
+        if(nb.groupId===gid) continue; // same group, skip
+        var nbEl=document.getElementById('pzp'+nb.id);
+        var nbX=nbEl?parseInt(nbEl.style.left):nb.x;
+        var nbY=nbEl?parseInt(nbEl.style.top) :nb.y;
+        nb.x=nbX;nb.y=nbY;
+        var dc=pi.col-nb.col, dr=pi.row-nb.row;
+        if(Math.abs(dc)+Math.abs(dr)!==1) continue;
+        var expImgX=(nbX+tab)+dc*ps, expImgY=(nbY+tab)+dr*ps;
+        var dist=Math.sqrt((myImgX-expImgX)*(myImgX-expImgX)+(myImgY-expImgY)*(myImgY-expImgY));
+        if(dist>thresh) continue;
+        // Found a snap — align entire dragged group so pi aligns with nb
+        var offsetX=(expImgX-tab)-pi.x;
+        var offsetY=(expImgY-tab)-pi.y;
+        snapPiece=pi; snapNb=nb;
+        snapTarget={ox:offsetX,oy:offsetY};
+        break outer;
+      }
     }
-    if(!didSnap){p.snapped=false;el.classList.remove('snapped');}
-    pzSave();pzSyncPiece(p);pzUpdateStatus();pzCheckDone();
+
+    if(snapTarget){
+      // Move entire group by the snap offset
+      PZ.pieces.forEach(function(q){
+        if(q.groupId!==gid) return;
+        var qel=document.getElementById('pzp'+q.id);
+        if(qel){
+          var fx=q.x+snapTarget.ox, fy=q.y+snapTarget.oy;
+          qel.style.transition='left .15s,top .15s';
+          qel.style.left=fx+'px'; qel.style.top=fy+'px';
+          q.x=fx; q.y=fy;
+          qel.classList.add('snapped'); q.snapped=true; qel.style.zIndex=1;
+        }
+      });
+      // Merge the two groups: assign snapNb's group to the dragged group
+      var oldGid=snapNb.groupId, newGid=gid;
+      PZ.pieces.forEach(function(q){
+        if(q.groupId===oldGid) q.groupId=newGid;
+      });
+      gBurst(e.clientX,e.clientY,10);
+    } else {
+      // Not snapped — restore snapped class only if already in a multi-piece group
+      var groupSize=PZ.pieces.filter(function(q){return q.groupId===gid;}).length;
+      PZ.pieces.forEach(function(q){
+        if(q.groupId!==gid) return;
+        var qel=document.getElementById('pzp'+q.id);
+        if(qel) qel.classList.toggle('snapped', groupSize>1);
+        q.snapped=(groupSize>1);
+      });
+    }
+
+    pzSave();
+    PZ.pieces.forEach(function(q){if(q.groupId===gid||q.groupId===p.groupId) pzSyncPiece(q);});
+    pzUpdateStatus();pzCheckDone();
   });
 }
 
@@ -2364,37 +2422,31 @@ function pzClearHighlight(){
 }
 
 function pzUpdateStatus(){
-  // Count how many pieces are correctly positioned relative to piece 0
-  var n=pzCorrectCount();
-  pzlStatus(n+' / '+PZ.pieces.length+' pieces connected');
+  var largest=pzCorrectCount();
+  var total=PZ.pieces.length;
+  pzlStatus(largest===total ? 'All connected! 🎉' : largest+' / '+total+' in largest group');
 }
 
 function pzCorrectCount(){
   if(!PZ.pieces.length) return 0;
-  var ps=PZ.ps,tab=PZ.tab,thresh=4; // within 4px = correctly placed
-  var p0=PZ.pieces[0];
-  var count=0;
-  PZ.pieces.forEach(function(p){
-    // Expected position relative to p0
-    var expX=p0.x+(p.col-p0.col)*ps;
-    var expY=p0.y+(p.row-p0.row)*ps;
-    var dist=Math.sqrt((p.x-expX)*(p.x-expX)+(p.y-expY)*(p.y-expY));
-    if(dist<thresh) count++;
-  });
-  return count;
+  // Count pieces in the largest group
+  var counts={};
+  PZ.pieces.forEach(function(p){ counts[p.groupId]=(counts[p.groupId]||0)+1; });
+  return Math.max.apply(null,Object.values(counts));
 }
 
 function pzCheckDone(){
-  var n=pzCorrectCount();
-  if(n===PZ.pieces.length&&n>0){
-    // Clear all highlight outlines
-    document.querySelectorAll('#pzl-board .pzl-piece').forEach(function(e){
-      e.style.outline='';delete e.dataset.hl;
-    });
-    $('pzl-done').style.display='flex';
-    if(db) db.collection('puzzles').doc('pz').update({solved:true}).catch(function(){});
-    gBurst(window.innerWidth/2,window.innerHeight/2,30);
-  }
+  if(!PZ.pieces.length) return;
+  // All pieces in one group = solved
+  var gids={};
+  PZ.pieces.forEach(function(p){gids[p.groupId]=1;});
+  if(Object.keys(gids).length!==1) return;
+  document.querySelectorAll('#pzl-board .pzl-piece').forEach(function(e){
+    e.style.outline='';delete e.dataset.hl;
+  });
+  $('pzl-done').style.display='flex';
+  if(db) db.collection('puzzles').doc('pz').update({solved:true}).catch(function(){});
+  gBurst(window.innerWidth/2,window.innerHeight/2,30);
 }
 
 function pzRenderAll(){
@@ -2447,7 +2499,8 @@ function pzlBuild(imgUrl,thumbUrl){
     var old=document.getElementById('pzl-ghost');if(old)old.remove();
     PZ.pieces=[];
     for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
-      PZ.pieces.push({id:r*cols+c,col:c,row:r,
+      var id=r*cols+c;
+      PZ.pieces.push({id:id,col:c,row:r,groupId:id,
         x:Math.floor(Math.random()*Math.max(bw-cs,10)),
         y:Math.floor(Math.random()*Math.max(bh-cs,10)),
         snapped:false});
