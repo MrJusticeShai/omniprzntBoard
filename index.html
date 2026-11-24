@@ -490,7 +490,7 @@ small{color:var(--mute)}
   <img id="pzl-hint-img" src="" alt="" style="position:absolute;top:52px;left:50%;transform:translateX(-50%);width:min(160px,28vw);border-radius:10px;opacity:.28;pointer-events:none;display:none;z-index:4;border:2px solid rgba(255,255,255,.2)">
   <div id="pzl-board" style="flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#2a1020 0%,#0d0608 100%)"></div>
   <div id="pzl-done" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.82);color:#fff;text-align:center;padding:20px;z-index:20;gap:20px">
-    <div style="font-size:1.6rem;font-weight:bold">🎉 You solved it together! 💘</div>
+    <div id="pzl-done-title" style="font-size:1.6rem;font-weight:bold">🎉 You solved it together! 💘</div>
     <div id="pzl-done-time" style="font-size:1.1rem;color:#ffcce0;margin-top:-8px"></div>
     <div style="font-size:.95rem;color:#ddd;margin-top:-4px">Pick what's next</div>
     <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:4px">
@@ -2184,6 +2184,7 @@ window.pzlNew=function(){window.pzlClose();window.pzlOpenPicker();};
 window.pzlResume=function(){var s=ld('pz_state',null);if(!s||!s.imgUrl)return;pzlLoad(s);};
 
 window.pzlNextLevel=function(mode){
+  PZ.timeUp=false;
   $('pzl-done').style.display='none';
   if(mode==='harder'){
     var levels=[5,6,7,10,15];
@@ -2452,6 +2453,7 @@ function pzCorrectCount(){
 
 function pzCheckDone(){
   if(!PZ.pieces.length) return;
+  if(PZ.timeUp) return; // time ran out — no win
   var gids={};
   PZ.pieces.forEach(function(p){gids[p.groupId]=1;});
   if(Object.keys(gids).length!==1) return;
@@ -2459,6 +2461,7 @@ function pzCheckDone(){
     e.style.outline='';delete e.dataset.hl;
   });
   var finalTime=pzTimerStop();
+  $('pzl-done-title').textContent='🎉 You solved it together! 💘';
   $('pzl-done-time').textContent='Completed in '+finalTime+' ⏱';
   $('pzl-done').style.display='flex';
   if(db) db.collection('puzzles').doc('pz').update({solved:true}).catch(function(){});
@@ -2600,39 +2603,42 @@ function pzFmtTime(secs){
 
 function pzTimerStart(){
   pzTimerStop();
+  PZ.timeUp=false;
   _pzStart=Date.now();
   _pzElapsed=0;
   _pzCountdown=PZ.countdown||0;
-  clearInterval(_pzTick);
+  var timerEl=$('pzl-timer');
+  if(timerEl){timerEl.style.color='#fff';timerEl.textContent=_pzCountdown>0?pzFmtTime(_pzCountdown):'0:00';}
   _pzTick=setInterval(function(){
     _pzElapsed=Math.floor((Date.now()-_pzStart)/1000);
-    var display, el=$('pzl-timer');
+    var el=$('pzl-timer');
     if(_pzCountdown>0){
       var remaining=_pzCountdown-_pzElapsed;
-      display=pzFmtTime(remaining);
       if(el){
-        el.textContent=display;
+        el.textContent=pzFmtTime(Math.max(0,remaining));
         el.style.color=remaining<=10?'#ff6b6b':remaining<=30?'#ffcc00':'#fff';
       }
       if(remaining<=0){
         pzTimerStop();
-        // Time's up!
-        if($('pzl-done').style.display!=='flex'){
-          $('pzl-done-time').textContent="Time's up! Better luck next time 😅";
-          $('pzl-done').style.display='flex';
-          gBurst(window.innerWidth/2,window.innerHeight/2,10);
-        }
+        PZ.timeUp=true;
+        // Lock all pieces
+        document.querySelectorAll('#pzl-board .pzl-piece').forEach(function(e){
+          e.style.pointerEvents='none';
+        });
+        // Show failure overlay
+        $('pzl-done-time').textContent="⏰ Time's up — so close!";
+        $('pzl-done-title').textContent="You ran out of time 💔";
+        $('pzl-done').style.display='flex';
       }
     } else {
-      display=pzFmtTime(_pzElapsed);
-      if(el) el.textContent=display;
+      if(el) el.textContent=pzFmtTime(_pzElapsed);
     }
   },500);
 }
 
 function pzTimerStop(){
   clearInterval(_pzTick);_pzTick=null;
-  return pzFmtTime(_pzCountdown>0?_pzCountdown-_pzElapsed:_pzElapsed);
+  return pzFmtTime(_pzCountdown>0?Math.max(0,_pzCountdown-_pzElapsed):_pzElapsed);
 }
 // ===== END JIGSAW PUZZLE =====
 
