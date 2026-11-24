@@ -458,6 +458,14 @@ small{color:var(--mute)}
     <button class="pzl-rbtn" id="pzl-resume-btn" style="display:none" onclick="pzlResume()">▶ Resume</button>
     <button class="pzl-rbtn" id="pzl-new-btn" style="display:none" onclick="pzlNew()">🔄 New game</button>
   </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:.85rem">
+    <span style="font-weight:600">⏱ Timer mode:</span>
+    <button class="pzl-dbtn active" onclick="pzlSetTimer(this,0)">Stopwatch</button>
+    <button class="pzl-dbtn" onclick="pzlSetTimer(this,180)">3 min</button>
+    <button class="pzl-dbtn" onclick="pzlSetTimer(this,300)">5 min</button>
+    <button class="pzl-dbtn" onclick="pzlSetTimer(this,600)">10 min</button>
+    <button class="pzl-dbtn" onclick="pzlSetTimer(this,900)">15 min</button>
+  </div>
   <div id="pzl-thumb" style="margin-top:10px"></div>
 </div></details>
 </main>
@@ -473,16 +481,18 @@ small{color:var(--mute)}
 
 <!-- Puzzle overlay -->
 <div id="pzl-ov" style="position:fixed;inset:0;z-index:55;display:none;flex-direction:column;background:#1a0d14;touch-action:none;overflow:hidden">
-  <div id="pzl-bar" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,.55);flex-shrink:0;position:relative;z-index:5">
-    <button onclick="pzlClose()" style="background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 18px;font:inherit;cursor:pointer;font-size:.85rem">✕ Exit</button>
-    <span id="pzl-status" style="color:#ddd;font-size:.82rem;flex:1;text-align:center"></span>
-    <button onclick="pzlHint()" style="background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 18px;font:inherit;cursor:pointer;font-size:.85rem">👁 Hint</button>
+  <div id="pzl-bar" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,.55);flex-shrink:0;position:relative;z-index:5;gap:8px">
+    <button onclick="pzlClose()" style="background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 18px;font:inherit;cursor:pointer;font-size:.85rem;flex-shrink:0">✕ Exit</button>
+    <span id="pzl-status" style="color:#ddd;font-size:.78rem;flex:1;text-align:center"></span>
+    <span id="pzl-timer" style="color:#fff;font-size:1rem;font-weight:bold;font-variant-numeric:tabular-nums;min-width:60px;text-align:center;flex-shrink:0">0:00</span>
+    <button onclick="pzlHint()" style="background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 18px;font:inherit;cursor:pointer;font-size:.85rem;flex-shrink:0">👁 Hint</button>
   </div>
   <img id="pzl-hint-img" src="" alt="" style="position:absolute;top:52px;left:50%;transform:translateX(-50%);width:min(160px,28vw);border-radius:10px;opacity:.28;pointer-events:none;display:none;z-index:4;border:2px solid rgba(255,255,255,.2)">
   <div id="pzl-board" style="flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#2a1020 0%,#0d0608 100%)"></div>
   <div id="pzl-done" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.82);color:#fff;text-align:center;padding:20px;z-index:20;gap:20px">
     <div style="font-size:1.6rem;font-weight:bold">🎉 You solved it together! 💘</div>
-    <div style="font-size:.95rem;color:#ddd;margin-top:-8px">Pick what's next</div>
+    <div id="pzl-done-time" style="font-size:1.1rem;color:#ffcce0;margin-top:-8px"></div>
+    <div style="font-size:.95rem;color:#ddd;margin-top:-4px">Pick what's next</div>
     <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:4px">
       <button onclick="pzlNextLevel('harder')" style="font:inherit;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:12px 24px;cursor:pointer;font-size:.95rem">🔥 Harder difficulty</button>
       <button onclick="pzlNextLevel('new')"    style="font:inherit;background:rgba(255,255,255,.18);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:12px 24px;cursor:pointer;font-size:.95rem">🖼 New photo</button>
@@ -2148,9 +2158,14 @@ window.addEventListener('resize',function(){
 });
 
 // ===== JIGSAW PUZZLE =====
-var PZ={cols:5,imgUrl:'',thumbUrl:'',pieces:[],ps:0,tab:0,dirs:null,imgEl:null,dragging:null,pzUnsub:null,gz:0};
+var PZ={cols:5,rows:5,imgUrl:'',thumbUrl:'',pieces:[],ps:0,tab:0,dirs:null,imgEl:null,dragging:null,pzUnsub:null,gz:0,countdown:0};
 
 window.pzlSetDiff=function(b){document.querySelectorAll('.pzl-dbtn').forEach(function(x){x.classList.remove('active');});b.classList.add('active');PZ.cols=parseInt(b.dataset.cols);PZ.rows=PZ.cols;};
+window.pzlSetTimer=function(b,secs){
+  b.parentNode.querySelectorAll('.pzl-dbtn').forEach(function(x){x.classList.remove('active');});
+  b.classList.add('active');
+  PZ.countdown=secs;
+};
 
 window.pzlOpenPicker=function(){
   var g=$('pzl-pick-grid');g.innerHTML='';
@@ -2163,7 +2178,7 @@ window.pzlOpenPicker=function(){
   $('pzl-picker').style.display='flex';
 };
 
-window.pzlClose=function(){$('pzl-ov').style.display='none';$('pzl-hint-img').style.display='none';$('pzl-done').style.display='none';if(PZ.pzUnsub){PZ.pzUnsub();PZ.pzUnsub=null;}};
+window.pzlClose=function(){pzTimerStop();$('pzl-ov').style.display='none';$('pzl-hint-img').style.display='none';$('pzl-done').style.display='none';if(PZ.pzUnsub){PZ.pzUnsub();PZ.pzUnsub=null;}};
 window.pzlHint=function(){var i=$('pzl-hint-img');i.style.display=i.style.display==='block'?'none':'block';};
 window.pzlNew=function(){window.pzlClose();window.pzlOpenPicker();};
 window.pzlResume=function(){var s=ld('pz_state',null);if(!s||!s.imgUrl)return;pzlLoad(s);};
@@ -2437,13 +2452,14 @@ function pzCorrectCount(){
 
 function pzCheckDone(){
   if(!PZ.pieces.length) return;
-  // All pieces in one group = solved
   var gids={};
   PZ.pieces.forEach(function(p){gids[p.groupId]=1;});
   if(Object.keys(gids).length!==1) return;
   document.querySelectorAll('#pzl-board .pzl-piece').forEach(function(e){
     e.style.outline='';delete e.dataset.hl;
   });
+  var finalTime=pzTimerStop();
+  $('pzl-done-time').textContent='Completed in '+finalTime+' ⏱';
   $('pzl-done').style.display='flex';
   if(db) db.collection('puzzles').doc('pz').update({solved:true}).catch(function(){});
   gBurst(window.innerWidth/2,window.innerHeight/2,30);
@@ -2506,6 +2522,7 @@ function pzlBuild(imgUrl,thumbUrl){
         snapped:false});
     }
     pzRenderAll();pzSave();
+    pzTimerStart();
     var nb=$('pzl-new-btn'),rb=$('pzl-resume-btn');
     if(nb)nb.style.display='';if(rb)rb.style.display='';
     pzThumb();
@@ -2573,6 +2590,50 @@ function pzThumb(){
   if(s&&s.imgUrl){var nb=$('pzl-new-btn'),rb=$('pzl-resume-btn');if(nb)nb.style.display='';if(rb)rb.style.display='';pzThumb();}
   if(db){db.collection('puzzles').doc('pz').get().then(function(doc){if(!doc.exists||!doc.data().imgUrl)return;var r=doc.data(),l=ld('pz_state',null);if(!l||(r.ts&&r.ts>(l.ts||0))){sv('pz_state',r);pzThumb();}var nb=$('pzl-new-btn'),rb=$('pzl-resume-btn');if(nb)nb.style.display='';if(rb)rb.style.display='';}).catch(function(){});}
 })();
+// ===== PUZZLE TIMER =====
+var _pzTick=null, _pzStart=0, _pzElapsed=0, _pzCountdown=0;
+
+function pzFmtTime(secs){
+  var m=Math.floor(Math.abs(secs)/60), s=Math.abs(secs)%60;
+  return (secs<0?'-':'')+m+':'+(s<10?'0':'')+s;
+}
+
+function pzTimerStart(){
+  pzTimerStop();
+  _pzStart=Date.now();
+  _pzElapsed=0;
+  _pzCountdown=PZ.countdown||0;
+  clearInterval(_pzTick);
+  _pzTick=setInterval(function(){
+    _pzElapsed=Math.floor((Date.now()-_pzStart)/1000);
+    var display, el=$('pzl-timer');
+    if(_pzCountdown>0){
+      var remaining=_pzCountdown-_pzElapsed;
+      display=pzFmtTime(remaining);
+      if(el){
+        el.textContent=display;
+        el.style.color=remaining<=10?'#ff6b6b':remaining<=30?'#ffcc00':'#fff';
+      }
+      if(remaining<=0){
+        pzTimerStop();
+        // Time's up!
+        if($('pzl-done').style.display!=='flex'){
+          $('pzl-done-time').textContent="Time's up! Better luck next time 😅";
+          $('pzl-done').style.display='flex';
+          gBurst(window.innerWidth/2,window.innerHeight/2,10);
+        }
+      }
+    } else {
+      display=pzFmtTime(_pzElapsed);
+      if(el) el.textContent=display;
+    }
+  },500);
+}
+
+function pzTimerStop(){
+  clearInterval(_pzTick);_pzTick=null;
+  return pzFmtTime(_pzCountdown>0?_pzCountdown-_pzElapsed:_pzElapsed);
+}
 // ===== END JIGSAW PUZZLE =====
 
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
