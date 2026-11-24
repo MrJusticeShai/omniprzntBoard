@@ -447,10 +447,10 @@ small{color:var(--mute)}
   <p style="font-size:.88rem;color:var(--mute);margin:0 0 10px">Pick a photo from your gallery, choose difficulty, and solve it together 💘</p>
   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
     <span style="font-size:.88rem;font-weight:600">Difficulty:</span>
-    <button class="pzl-dbtn active" data-cols="3" onclick="pzlSetDiff(this)">Easy 3×3</button>
-    <button class="pzl-dbtn" data-cols="4" onclick="pzlSetDiff(this)">Medium 4×4</button>
-    <button class="pzl-dbtn" data-cols="5" onclick="pzlSetDiff(this)">Hard 5×5</button>
-    <button class="pzl-dbtn" data-cols="6" onclick="pzlSetDiff(this)">Expert 6×6</button>
+    <button class="pzl-dbtn active" data-cols="5" onclick="pzlSetDiff(this)">Easy 5×5</button>
+    <button class="pzl-dbtn" data-cols="6" onclick="pzlSetDiff(this)">Medium 6×6</button>
+    <button class="pzl-dbtn" data-cols="7" onclick="pzlSetDiff(this)">Hard 7×7</button>
+    <button class="pzl-dbtn" data-cols="15" onclick="pzlSetDiff(this)">Expert 15×15</button>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <button class="pzl-sbtn" onclick="pzlOpenPicker()">🖼 Pick photo &amp; start</button>
@@ -2147,7 +2147,7 @@ window.addEventListener('resize',function(){
 });
 
 // ===== JIGSAW PUZZLE =====
-var PZ={cols:3,imgUrl:'',thumbUrl:'',pieces:[],ps:0,tab:0,dirs:null,imgEl:null,dragging:null,pzUnsub:null,gz:0};
+var PZ={cols:5,imgUrl:'',thumbUrl:'',pieces:[],ps:0,tab:0,dirs:null,imgEl:null,dragging:null,pzUnsub:null,gz:0};
 
 window.pzlSetDiff=function(b){document.querySelectorAll('.pzl-dbtn').forEach(function(x){x.classList.remove('active');});b.classList.add('active');PZ.cols=parseInt(b.dataset.cols);PZ.rows=PZ.cols;};
 
@@ -2170,7 +2170,9 @@ window.pzlResume=function(){var s=ld('pz_state',null);if(!s||!s.imgUrl)return;pz
 window.pzlNextLevel=function(mode){
   $('pzl-done').style.display='none';
   if(mode==='harder'){
-    var next=Math.min(PZ.cols+1,6);
+    var levels=[5,6,7,15];
+    var idx=levels.indexOf(PZ.cols);
+    var next=levels[Math.min(idx+1,levels.length-1)];
     PZ.cols=next;PZ.rows=next;
     document.querySelectorAll('.pzl-dbtn').forEach(function(b){
       b.classList.toggle('active',parseInt(b.dataset.cols)===next);
