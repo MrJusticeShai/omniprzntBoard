@@ -1230,22 +1230,18 @@ onDataChanged(function(data){
 
 // Polling fallback — catches updates the real-time listener misses (e.g. backgrounded tab, mobile)
 if(db){
-  var pollFailCount=0, lastPollAttempt=0;
   setInterval(function(){
-    if(pendingWrites>0) return;
-    if(Date.now()-lastWriteAt<4000) return;
-    // Backoff: wait longer after each failure (max 60s between attempts)
-    var backoff=Math.min(pollFailCount*10000, 60000);
-    if(Date.now()-lastPollAttempt < backoff) return;
-    lastPollAttempt=Date.now();
+    if(pendingWrites > 0) return;
+    if(Date.now() - lastWriteAt < 4000) return;
     db.collection('usapp').doc('state').get().then(function(doc){
-      pollFailCount=0;
-      if(doc.exists){applySnapshot(doc.data());setSync('on','live ✓');}
-    }).catch(function(){
-      pollFailCount++;
-      setSync('off',pollFailCount>1?'offline':'reconnecting…');
+      if(doc.exists){
+        applySnapshot(doc.data());
+        setSync('on','poll ✓ '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+      }
+    }).catch(function(e){
+      setSync('off', e.code||e.message||'offline');
     });
-  }, 5000);
+  }, 3000);
 }
 
 // Manual sync — called when user taps the sync badge
@@ -1260,7 +1256,7 @@ function manualSync(){
       applySnapshot(data);
       setSync('on','✓ '+checked+'/'+total+' done');
     }
-  }).catch(function(e){ setSync('off','err:'+e.code); });
+  }).catch(function(e){ setSync('off','err: '+(e.code||e.message||'network')); });
 }
 
 // ===== PLAY SPACE =====
